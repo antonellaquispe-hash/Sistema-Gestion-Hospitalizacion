@@ -21,4 +21,16 @@ public class HospitalizationRequestService {
         request.setStatus(RequestStatus.PENDING);
         return repository.save(request);
     }
+
+    public HospitalizationRequest updateStatus(Long id, RequestStatus newStatus) {
+        HospitalizationRequest request = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hospitalization request not found"));
+
+        if (request.getStatus() != RequestStatus.PENDING) {
+            throw new RuntimeException("Only pending requests can change status");
+        }
+
+        request.setStatus(newStatus);
+        return repository.save(request);
+    }
 }

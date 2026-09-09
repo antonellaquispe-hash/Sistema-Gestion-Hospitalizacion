@@ -1,6 +1,7 @@
 package com.tecsup.Evaluacion.controller;
 
 import com.tecsup.Evaluacion.model.HospitalizationRequest;
+import com.tecsup.Evaluacion.model.RequestStatus;
 import com.tecsup.Evaluacion.service.HospitalizationRequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,5 +24,13 @@ public class HospitalizationRequestController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.create(request));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<HospitalizationRequest> updateStatus(
+            @PathVariable Long id,
+            @RequestParam RequestStatus status) {
+
+        return ResponseEntity.ok(service.updateStatus(id, status));
     }
 }
