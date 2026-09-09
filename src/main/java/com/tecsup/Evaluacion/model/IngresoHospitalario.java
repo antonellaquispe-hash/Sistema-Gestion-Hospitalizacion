@@ -1,4 +1,4 @@
-package com.tecsup.Evaluacion.entity;
+package com.tecsup.Evaluacion.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

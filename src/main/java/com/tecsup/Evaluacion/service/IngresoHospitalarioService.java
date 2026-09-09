@@ -1,8 +1,8 @@
 package com.tecsup.Evaluacion.service;
 
-import com.tecsup.Evaluacion.entity.Cama;
-import com.tecsup.Evaluacion.entity.IngresoHospitalario;
-import com.tecsup.Evaluacion.entity.Paciente;
+import com.tecsup.Evaluacion.model.Cama;
+import com.tecsup.Evaluacion.model.IngresoHospitalario;
+import com.tecsup.Evaluacion.model.Paciente;
 import com.tecsup.Evaluacion.repository.CamaRepository;
 import com.tecsup.Evaluacion.repository.IngresoHospitalarioRepository;
 import com.tecsup.Evaluacion.repository.PacienteRepository;
