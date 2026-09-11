@@ -2,9 +2,11 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.model.IngresoHospitalario;
+import com.tecsup.Evaluacion.model.Movimiento;
 import com.tecsup.Evaluacion.model.Paciente;
 import com.tecsup.Evaluacion.repository.CamaRepository;
 import com.tecsup.Evaluacion.repository.IngresoHospitalarioRepository;
+import com.tecsup.Evaluacion.repository.MovimientoRepository;
 import com.tecsup.Evaluacion.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,9 @@ public class IngresoHospitalarioService {
 
     @Autowired
     private CamaRepository camaRepository;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
 
     // RF-HOSP-07: Registrar ingreso hospitalario
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
@@ -54,5 +59,52 @@ public class IngresoHospitalarioService {
         camaRepository.save(cama);
 
         return ingresoRepository.save(ingreso);
+    }
+
+    // RF-HOSP-17: Trasladar paciente entre camas
+    public Movimiento trasladarPaciente(Long ingresoId, Long camaDestinoId,
+                                        String motivo, String medicoResponsable,
+                                        String usuarioTraslado, String observaciones) {
+        IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
+                .orElseThrow(() -> new RuntimeException("Ingreso hospitalario no encontrado"));
+
+        Cama camaOrigen = ingreso.getCama();
+        if (camaOrigen == null) {
+            throw new RuntimeException("El paciente no cuenta con una cama asignada para trasladar");
+        }
+
+        Cama camaDestino = camaRepository.findById(camaDestinoId)
+                .orElseThrow(() -> new RuntimeException("Cama de destino no encontrada"));
+
+        if (camaOrigen.getId().equals(camaDestino.getId())) {
+            throw new RuntimeException("La cama de destino debe ser diferente a la cama de origen");
+        }
+
+        if (!"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
+            throw new RuntimeException("La cama de destino no se encuentra disponible");
+        }
+
+        // RF-HOSP-19: Actualizar estado de las camas involucradas
+        camaOrigen.setEstado("DISPONIBLE");
+        camaRepository.save(camaOrigen);
+
+        camaDestino.setEstado("OCUPADA");
+        camaRepository.save(camaDestino);
+
+        ingreso.setCama(camaDestino);
+        ingresoRepository.save(ingreso);
+
+        // RF-HOSP-18: Registrar historial completo de movimientos
+        Movimiento movimiento = new Movimiento();
+        movimiento.setIngreso(ingreso);
+        movimiento.setCamaOrigen(camaOrigen);
+        movimiento.setCamaDestino(camaDestino);
+        movimiento.setFechaTraslado(LocalDateTime.now());
+        movimiento.setMotivo(motivo);
+        movimiento.setMedicoResponsable(medicoResponsable);
+        movimiento.setUsuarioTraslado(usuarioTraslado);
+        movimiento.setObservaciones(observaciones);
+
+        return movimientoRepository.save(movimiento);
     }
 }
