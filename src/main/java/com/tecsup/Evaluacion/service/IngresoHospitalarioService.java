@@ -1,5 +1,7 @@
 package com.tecsup.Evaluacion.service;
 
+import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
+import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.model.IngresoHospitalario;
 import com.tecsup.Evaluacion.model.Movimiento;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class IngresoHospitalarioService {
@@ -31,7 +34,7 @@ public class IngresoHospitalarioService {
     // RF-HOSP-07: Registrar ingreso hospitalario
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
         Paciente paciente = pacienteRepository.findById(pacienteId)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado"));
 
         IngresoHospitalario ingreso = new IngresoHospitalario();
         ingreso.setPaciente(paciente);
@@ -45,13 +48,13 @@ public class IngresoHospitalarioService {
     // RF-HOSP-14: Asignar cama disponible a paciente
     public IngresoHospitalario asignarCama(Long ingresoId, Long camaId) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
-                .orElseThrow(() -> new RuntimeException("Ingreso hospitalario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
 
         Cama cama = camaRepository.findById(camaId)
-                .orElseThrow(() -> new RuntimeException("Cama no encontrada"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cama no encontrada"));
 
         if (!"DISPONIBLE".equalsIgnoreCase(cama.getEstado())) {
-            throw new RuntimeException("La cama seleccionada no se encuentra disponible");
+            throw new ReglaDeNegocioException("La cama seleccionada no se encuentra disponible");
         }
 
         ingreso.setCama(cama);
@@ -66,22 +69,22 @@ public class IngresoHospitalarioService {
                                         String motivo, String medicoResponsable,
                                         String usuarioTraslado, String observaciones) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
-                .orElseThrow(() -> new RuntimeException("Ingreso hospitalario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
 
         Cama camaOrigen = ingreso.getCama();
         if (camaOrigen == null) {
-            throw new RuntimeException("El paciente no cuenta con una cama asignada para trasladar");
+            throw new ReglaDeNegocioException("El paciente no cuenta con una cama asignada para trasladar");
         }
 
         Cama camaDestino = camaRepository.findById(camaDestinoId)
-                .orElseThrow(() -> new RuntimeException("Cama de destino no encontrada"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cama de destino no encontrada"));
 
         if (camaOrigen.getId().equals(camaDestino.getId())) {
-            throw new RuntimeException("La cama de destino debe ser diferente a la cama de origen");
+            throw new ReglaDeNegocioException("La cama de destino debe ser diferente a la cama de origen");
         }
 
         if (!"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
-            throw new RuntimeException("La cama de destino no se encuentra disponible");
+            throw new ReglaDeNegocioException("La cama de destino no se encuentra disponible");
         }
 
         // RF-HOSP-19: Actualizar estado de las camas involucradas
@@ -106,5 +109,31 @@ public class IngresoHospitalarioService {
         movimiento.setObservaciones(observaciones);
 
         return movimientoRepository.save(movimiento);
+    }
+
+    public List<IngresoHospitalario> listar() {
+        return ingresoRepository.findAll();
+    }
+
+    public IngresoHospitalario obtenerPorId(Long id) {
+        return ingresoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
+    }
+
+    public IngresoHospitalario finalizarIngreso(Long id) {
+        IngresoHospitalario ingreso = obtenerPorId(id);
+
+        if (!"ACTIVO".equalsIgnoreCase(ingreso.getEstado())) {
+            throw new ReglaDeNegocioException("Solo los ingresos activos pueden finalizarse");
+        }
+
+        Cama cama = ingreso.getCama();
+        if (cama != null) {
+            cama.setEstado("DISPONIBLE");
+            camaRepository.save(cama);
+        }
+
+        ingreso.setEstado("FINALIZADO");
+        return ingresoRepository.save(ingreso);
     }
 }

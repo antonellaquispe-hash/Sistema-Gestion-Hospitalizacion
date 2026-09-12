@@ -3,10 +3,13 @@ package com.tecsup.Evaluacion.controller;
 import com.tecsup.Evaluacion.model.IngresoHospitalario;
 import com.tecsup.Evaluacion.model.Movimiento;
 import com.tecsup.Evaluacion.service.IngresoHospitalarioService;
+import com.tecsup.Evaluacion.service.MovimientoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ingresos")
@@ -14,6 +17,29 @@ public class IngresoHospitalarioController {
 
     @Autowired
     private IngresoHospitalarioService ingresoService;
+
+    @Autowired
+    private MovimientoService movimientoService;
+
+    @GetMapping
+    public List<IngresoHospitalario> listar() {
+        return ingresoService.listar();
+    }
+
+    @GetMapping("/{id}")
+    public IngresoHospitalario obtenerPorId(@PathVariable Long id) {
+        return ingresoService.obtenerPorId(id);
+    }
+
+    @GetMapping("/{ingresoId}/movimientos")
+    public List<Movimiento> listarMovimientos(@PathVariable Long ingresoId) {
+        return movimientoService.listarPorIngreso(ingresoId);
+    }
+
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<IngresoHospitalario> finalizarIngreso(@PathVariable Long id) {
+        return ResponseEntity.ok(ingresoService.finalizarIngreso(id));
+    }
 
     // RF-HOSP-07: Registrar ingreso hospitalario
     @PostMapping
