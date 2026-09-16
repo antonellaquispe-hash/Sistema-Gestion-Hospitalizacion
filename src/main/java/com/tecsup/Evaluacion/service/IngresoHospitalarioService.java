@@ -112,7 +112,7 @@ public class IngresoHospitalarioService {
     }
 
     public List<IngresoHospitalario> listar() {
-        return ingresoRepository.findAll();
+        return ingresoRepository.listarConTodo();
     }
 
     public IngresoHospitalario obtenerPorId(Long id) {

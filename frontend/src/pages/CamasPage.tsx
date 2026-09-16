@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Box, Chip, Grid, Paper, Typography } from '@mui/material';
-import { HotelOutlined } from '@mui/icons-material';
+import { HotelOutlined, HomeOutlined, RoomOutlined } from '@mui/icons-material';
 import type { IngresoHospitalario } from '../types';
 import { camasApi } from '../api/camas';
 import { ingresosApi } from '../api/ingresos';
@@ -84,6 +84,8 @@ export function CamasPage() {
             .sort((a, b) => a.id - b.id)
             .map((cama) => {
               const ocupante = ocupantes.get(cama.id);
+              const habitacion = cama.habitacion;
+              const piso = habitacion?.piso;
               return (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={cama.id}>
                   <Paper
@@ -106,19 +108,29 @@ export function CamasPage() {
                         <Typography fontWeight={800}>Cama #{cama.id}</Typography>
                       </Box>
                       <Chip
-                        label={ESTADO_LABEL[cama.estado] ?? cama.estado}
+                        label={cama.estado === 'DISPONIBLE' ? 'Libre' : cama.estado}
                         size="small"
                         sx={{
-                          bgcolor: `${ESTADO_COLOR[cama.estado] ?? '#475569'}1a`,
-                          color: ESTADO_COLOR[cama.estado] ?? '#475569',
+                          bgcolor: cama.estado === 'DISPONIBLE' ? '#0f766e1a' : '#b91c1c1a',
+                          color: cama.estado === 'DISPONIBLE' ? '#0f766e' : '#b91c1c',
                           fontWeight: 700,
                         }}
                       />
                     </Box>
                     <Box sx={{ mt: 1.5 }}>
+                      {piso && (
+                        <Typography variant="caption" color="text.secondary">
+                          <RoomOutlined sx={{ fontSize: 12, verticalAlign: 'middle' }} /> {piso.nombre}
+                        </Typography>
+                      )}
+                      {habitacion && (
+                        <Typography variant="caption" color="text.secondary">
+                          <HomeOutlined sx={{ fontSize: 12, verticalAlign: 'middle' }} /> Hab. {habitacion.numero}
+                        </Typography>
+                      )}
                       {ocupante ? (
                         <>
-                          <Typography fontWeight={600}>{ocupante.paciente?.nombre ?? 'Paciente'}</Typography>
+                          <Typography fontWeight={600} sx={{ mt: 0.5 }}>{ocupante.paciente?.nombre ?? 'Paciente'}</Typography>
                           <Typography variant="caption" color="text.secondary">
                             DNI {ocupante.paciente?.dni ?? '—'} · Ingreso #{ocupante.id}
                           </Typography>

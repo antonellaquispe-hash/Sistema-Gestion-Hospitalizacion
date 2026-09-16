@@ -16,10 +16,14 @@ public class CamaService {
     }
 
     public List<Cama> listar() {
-        return repository.findAll();
+        return repository.listarConHabitacionYPiso();
     }
 
     public List<Cama> listarDisponibles() {
-        return repository.findByEstado("DISPONIBLE");
+        return repository.findDisponiblesConHabitacionYPiso();
+    }
+
+    public Cama crear(Cama cama) {
+        return repository.save(cama);
     }
 }

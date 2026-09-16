@@ -1,3 +1,16 @@
+export interface Piso {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
+
+export interface Habitacion {
+  id: number;
+  numero: string;
+  descripcion: string;
+  piso: Piso | null;
+}
+
 export interface Paciente {
   id: number;
   nombre: string;
@@ -7,6 +20,7 @@ export interface Paciente {
 export interface Cama {
   id: number;
   estado: 'DISPONIBLE' | 'OCUPADA' | string;
+  habitacion: Habitacion | null;
 }
 
 export type SolicitudEstado = 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'CANCELADA';
@@ -26,6 +40,8 @@ export interface IngresoHospitalario {
   estado: 'ACTIVO' | 'FINALIZADO' | string;
   paciente: Paciente | null;
   cama: Cama | null;
+  habitacion?: Habitacion | null;
+  piso?: Piso | null;
 }
 
 export interface Movimiento {

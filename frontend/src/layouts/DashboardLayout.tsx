@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import {
+  ApartmentOutlined,
   AssignmentOutlined,
   DashboardOutlined,
   GroupOutlined,
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Pacientes', path: '/pacientes', icon: <GroupOutlined /> },
   { label: 'Ingresos', path: '/ingresos', icon: <LocalHospitalOutlined /> },
   { label: 'Camas', path: '/camas', icon: <HotelOutlined /> },
+  { label: 'Pisos', path: '/pisos', icon: <ApartmentOutlined /> },
   { label: 'Movimientos', path: '/movimientos', icon: <SwapHorizOutlined /> },
 ];
 
@@ -50,6 +52,7 @@ const TITLES: Array<[string, string]> = [
   ['/pacientes', 'Pacientes'],
   ['/ingresos', 'Ingresos hospitalarios'],
   ['/camas', 'Camas'],
+  ['/pisos', 'Pisos y Habitaciones'],
   ['/movimientos', 'Movimientos'],
 ];
 

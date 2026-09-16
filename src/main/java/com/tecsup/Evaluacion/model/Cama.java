@@ -1,5 +1,7 @@
 package com.tecsup.Evaluacion.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,11 +14,17 @@ public class Cama {
 
     private String estado; // "DISPONIBLE", "OCUPADA"
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "habitacion_id", nullable = false)
+    @JsonIgnoreProperties({"camas"})
+    private Habitacion habitacion;
+
     public Cama() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    public Habitacion getHabitacion() { return habitacion; }
+    public void setHabitacion(Habitacion habitacion) { this.habitacion = habitacion; }
 }

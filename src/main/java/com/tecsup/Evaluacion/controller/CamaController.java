@@ -2,9 +2,7 @@ package com.tecsup.Evaluacion.controller;
 
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.service.CamaService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +24,10 @@ public class CamaController {
     @GetMapping("/disponibles")
     public List<Cama> listarDisponibles() {
         return service.listarDisponibles();
+    }
+
+    @PostMapping
+    public Cama crear(@RequestBody Cama cama) {
+        return service.crear(cama);
     }
 }
