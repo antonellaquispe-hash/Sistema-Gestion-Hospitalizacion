@@ -116,7 +116,7 @@ public class IngresoHospitalarioService {
     }
 
     public IngresoHospitalario obtenerPorId(Long id) {
-        return ingresoRepository.findById(id)
+        return ingresoRepository.buscarConTodoPorId(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
     }
 

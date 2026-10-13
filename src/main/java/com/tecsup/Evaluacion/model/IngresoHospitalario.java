@@ -3,7 +3,6 @@ package com.tecsup.Evaluacion.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "ingresos_hospitalarios")
 public class IngresoHospitalario {
@@ -22,15 +21,16 @@ public class IngresoHospitalario {
 
     @ManyToOne
     @JoinColumn(name = "cama_id")
-    @JsonIgnore
     private Cama cama;
 
     @Transient
+    @JsonIgnore
     public Habitacion getHabitacion() {
         return cama != null ? cama.getHabitacion() : null;
     }
 
     @Transient
+    @JsonIgnore
     public Piso getPiso() {
         Habitacion h = getHabitacion();
         return h != null ? h.getPiso() : null;
@@ -48,7 +48,6 @@ public class IngresoHospitalario {
     public void setEstado(String estado) { this.estado = estado; }
     public Paciente getPaciente() { return paciente; }
     public void setPaciente(Paciente paciente) { this.paciente = paciente; }
-    @JsonIgnore
     public Cama getCama() { return cama; }
     public void setCama(Cama cama) { this.cama = cama; }
 }
