@@ -37,6 +37,10 @@ public class SolicitudHospitalizacionService {
             throw new ReglaDeNegocioException("Solo las solicitudes pendientes pueden cambiar de estado");
         }
 
+        if (nuevoEstado == null || nuevoEstado == SolicitudEstado.PENDIENTE) {
+            throw new ReglaDeNegocioException("El nuevo estado debe ser APROBADA, RECHAZADA o CANCELADA");
+        }
+
         solicitud.setEstado(nuevoEstado);
         return repository.save(solicitud);
     }
