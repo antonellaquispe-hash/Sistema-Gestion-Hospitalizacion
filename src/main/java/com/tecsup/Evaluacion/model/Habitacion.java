@@ -17,7 +17,8 @@ public class Habitacion {
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "piso_id", nullable = false)
+    @JoinColumn(name = "piso_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_habitaciones_piso"))
     @JsonIgnoreProperties({"habitaciones"})
     private Piso piso;
 

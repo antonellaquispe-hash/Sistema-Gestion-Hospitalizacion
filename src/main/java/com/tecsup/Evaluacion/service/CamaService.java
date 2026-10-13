@@ -1,8 +1,11 @@
 package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
+import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.model.Cama;
+import com.tecsup.Evaluacion.model.Habitacion;
 import com.tecsup.Evaluacion.repository.CamaRepository;
+import com.tecsup.Evaluacion.repository.HabitacionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +14,11 @@ import java.util.List;
 public class CamaService {
 
     private final CamaRepository repository;
+    private final HabitacionRepository habitacionRepository;
 
-    public CamaService(CamaRepository repository) {
+    public CamaService(CamaRepository repository, HabitacionRepository habitacionRepository) {
         this.repository = repository;
+        this.habitacionRepository = habitacionRepository;
     }
 
     public List<Cama> listar() {
@@ -31,6 +36,9 @@ public class CamaService {
         if (cama.getHabitacion() == null || cama.getHabitacion().getId() == null) {
             throw new ReglaDeNegocioException("La habitación de la cama es obligatoria");
         }
+        Habitacion habitacion = habitacionRepository.findById(cama.getHabitacion().getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Habitación no encontrada"));
+        cama.setHabitacion(habitacion);
         return repository.save(cama);
     }
 }

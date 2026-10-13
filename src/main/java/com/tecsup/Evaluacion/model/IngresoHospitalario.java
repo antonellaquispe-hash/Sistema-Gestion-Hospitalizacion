@@ -3,6 +3,9 @@ package com.tecsup.Evaluacion.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "ingresos_hospitalarios")
 public class IngresoHospitalario {
@@ -16,12 +19,17 @@ public class IngresoHospitalario {
     private String estado; // "ACTIVO", "FINALIZADO"
 
     @ManyToOne
-    @JoinColumn(name = "paciente_id")
+    @JoinColumn(name = "paciente_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_ingresos_paciente"))
     private Paciente paciente;
 
     @ManyToOne
-    @JoinColumn(name = "cama_id")
+    @JoinColumn(name = "cama_id", foreignKey = @ForeignKey(name = "fk_ingresos_cama"))
     private Cama cama;
+
+    @OneToMany(mappedBy = "ingreso", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Movimiento> movimientos = new ArrayList<>();
 
     @Transient
     @JsonIgnore
@@ -50,4 +58,6 @@ public class IngresoHospitalario {
     public void setPaciente(Paciente paciente) { this.paciente = paciente; }
     public Cama getCama() { return cama; }
     public void setCama(Cama cama) { this.cama = cama; }
+    public List<Movimiento> getMovimientos() { return movimientos; }
+    public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }
 }

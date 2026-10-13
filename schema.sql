@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS ingresos_hospitalarios (
   fecha_ingreso DATETIME,
   motivo_ingreso VARCHAR(255),
   estado VARCHAR(255),
-  paciente_id BIGINT,
+  paciente_id BIGINT NOT NULL,
   cama_id BIGINT,
   PRIMARY KEY (id),
   CONSTRAINT fk_ingresos_paciente FOREIGN KEY (paciente_id)
@@ -73,9 +73,9 @@ CREATE TABLE IF NOT EXISTS movimientos (
   medico_responsable VARCHAR(255),
   usuario_traslado VARCHAR(255),
   observaciones VARCHAR(255),
-  ingreso_id BIGINT,
-  cama_origen_id BIGINT,
-  cama_destino_id BIGINT,
+  ingreso_id BIGINT NOT NULL,
+  cama_origen_id BIGINT NOT NULL,
+  cama_destino_id BIGINT NOT NULL,
   PRIMARY KEY (id),
   CONSTRAINT fk_movimientos_ingreso FOREIGN KEY (ingreso_id)
     REFERENCES ingresos_hospitalarios (id),

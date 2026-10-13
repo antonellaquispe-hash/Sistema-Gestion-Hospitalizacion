@@ -36,9 +36,9 @@ public class HabitacionService {
         if (habitacion.getPiso() == null || habitacion.getPiso().getId() == null) {
             throw new ReglaDeNegocioException("El piso de la habitación es obligatorio");
         }
-        if (!pisoRepository.existsById(habitacion.getPiso().getId())) {
-            throw new RecursoNoEncontradoException("Piso no encontrado");
-        }
+        Piso piso = pisoRepository.findById(habitacion.getPiso().getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Piso no encontrado"));
+        habitacion.setPiso(piso);
         return repository.save(habitacion);
     }
 }
