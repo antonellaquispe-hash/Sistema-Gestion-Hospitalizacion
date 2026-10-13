@@ -4,7 +4,6 @@ import com.tecsup.Evaluacion.model.IngresoHospitalario;
 import com.tecsup.Evaluacion.model.Movimiento;
 import com.tecsup.Evaluacion.service.IngresoHospitalarioService;
 import com.tecsup.Evaluacion.service.MovimientoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +14,15 @@ import java.util.List;
 @RequestMapping("/api/ingresos")
 public class IngresoHospitalarioController {
 
-    @Autowired
-    private IngresoHospitalarioService ingresoService;
+    private final IngresoHospitalarioService ingresoService;
 
-    @Autowired
-    private MovimientoService movimientoService;
+    private final MovimientoService movimientoService;
+
+    public IngresoHospitalarioController(IngresoHospitalarioService ingresoService,
+                                         MovimientoService movimientoService) {
+        this.ingresoService = ingresoService;
+        this.movimientoService = movimientoService;
+    }
 
     @GetMapping
     public List<IngresoHospitalario> listar() {

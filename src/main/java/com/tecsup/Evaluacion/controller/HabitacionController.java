@@ -1,9 +1,7 @@
 package com.tecsup.Evaluacion.controller;
 
 import com.tecsup.Evaluacion.model.Habitacion;
-import com.tecsup.Evaluacion.model.Piso;
 import com.tecsup.Evaluacion.service.HabitacionService;
-import com.tecsup.Evaluacion.service.PisoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,11 +11,9 @@ import java.util.List;
 public class HabitacionController {
 
     private final HabitacionService habitacionService;
-    private final PisoService pisoService;
 
-    public HabitacionController(HabitacionService habitacionService, PisoService pisoService) {
+    public HabitacionController(HabitacionService habitacionService) {
         this.habitacionService = habitacionService;
-        this.pisoService = pisoService;
     }
 
     @GetMapping
