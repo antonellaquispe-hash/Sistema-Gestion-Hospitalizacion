@@ -1,5 +1,6 @@
 package com.tecsup.Evaluacion.service;
 
+import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.repository.CamaRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,12 @@ public class CamaService {
     }
 
     public Cama crear(Cama cama) {
+        if (cama.getEstado() == null || cama.getEstado().isBlank()) {
+            throw new ReglaDeNegocioException("El estado de la cama es obligatorio");
+        }
+        if (cama.getHabitacion() == null || cama.getHabitacion().getId() == null) {
+            throw new ReglaDeNegocioException("La habitación de la cama es obligatoria");
+        }
         return repository.save(cama);
     }
 }

@@ -1,5 +1,7 @@
 package com.tecsup.Evaluacion.service;
 
+import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
+import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.model.Habitacion;
 import com.tecsup.Evaluacion.model.Piso;
 import com.tecsup.Evaluacion.repository.HabitacionRepository;
@@ -28,6 +30,15 @@ public class HabitacionService {
     }
 
     public Habitacion crear(Habitacion habitacion) {
+        if (habitacion.getNumero() == null || habitacion.getNumero().isBlank()) {
+            throw new ReglaDeNegocioException("El número de la habitación es obligatorio");
+        }
+        if (habitacion.getPiso() == null || habitacion.getPiso().getId() == null) {
+            throw new ReglaDeNegocioException("El piso de la habitación es obligatorio");
+        }
+        if (!pisoRepository.existsById(habitacion.getPiso().getId())) {
+            throw new RecursoNoEncontradoException("Piso no encontrado");
+        }
         return repository.save(habitacion);
     }
 }
