@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Credenciales locales ###
-application-supabase.properties
+application-local.properties
