@@ -58,7 +58,7 @@
 4. **P2 - Auditoria:** crear entidad, repositorio y servicio de auditoria, y
    registrar operaciones de entidades principales con el usuario autenticado;
    exponer consulta de bitacora.
-5. **P4 - Frontend:** agregar APIs, tipos, pantallas y rutas para usuarios y
-   roles, login y menu filtrado por rol; verificar permisos siempre en backend.
+5. **P4 - Frontend:** integrar APIs y tipos de autenticacion, pantallas de
+   usuarios/roles, login y menu filtrado por rol; el backend valida los permisos.
 6. **Cierre:** actualizar `schema.sql` y README, compilar frontend/backend y
    verificar arranque, endpoints y flujo de acceso.

@@ -1,0 +1,36 @@
+export type RolNombre = 'ADMINISTRADOR' | 'MÉDICO' | 'RECEPCIONISTA';
+
+export interface Sesion {
+  nombreUsuario: string;
+  nombreCompleto: string;
+  rol: RolNombre;
+  rutaInicial: string;
+}
+
+export interface Usuario {
+  id: number;
+  nombreUsuario: string;
+  nombreCompleto: string;
+  activo: boolean;
+  rol: Rol;
+}
+
+export interface Rol {
+  id: number;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface CrearUsuarioInput {
+  nombreUsuario: string;
+  nombreCompleto: string;
+  contrasena: string;
+  rolId: number;
+}
+
+export interface EditarUsuarioInput {
+  nombreUsuario: string;
+  nombreCompleto: string;
+  contrasena?: string;
+  rolId: number;
+}

@@ -5,7 +5,9 @@ import {
   AppBar,
   Avatar,
   Box,
+  Button,
   Drawer,
+  Divider,
   IconButton,
   List,
   ListItemButton,
@@ -24,9 +26,15 @@ import {
   HotelOutlined,
   LocalHospitalOutlined,
   Menu as MenuIcon,
+  LogoutOutlined,
+  ManageAccountsOutlined,
   SwapHorizOutlined,
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+import { useToast } from '../components/ToastProvider';
+import type { RolNombre } from '../types/auth';
 
 const DRAWER_WIDTH = 256;
 
@@ -34,16 +42,24 @@ interface NavItem {
   label: string;
   path: string;
   icon: ReactNode;
+  roles: RolNombre[];
 }
 
+const admin: RolNombre[] = ['ADMINISTRADOR'];
+const doctor: RolNombre[] = ['ADMINISTRADOR', 'MÉDICO'];
+const patients: RolNombre[] = ['ADMINISTRADOR', 'MÉDICO', 'RECEPCIONISTA'];
+const receptionist: RolNombre[] = ['ADMINISTRADOR', 'RECEPCIONISTA'];
+
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: <DashboardOutlined /> },
-  { label: 'Solicitudes', path: '/solicitudes', icon: <AssignmentOutlined /> },
-  { label: 'Pacientes', path: '/pacientes', icon: <GroupOutlined /> },
-  { label: 'Ingresos', path: '/ingresos', icon: <LocalHospitalOutlined /> },
-  { label: 'Camas', path: '/camas', icon: <HotelOutlined /> },
-  { label: 'Pisos', path: '/pisos', icon: <ApartmentOutlined /> },
-  { label: 'Movimientos', path: '/movimientos', icon: <SwapHorizOutlined /> },
+  { label: 'Dashboard', path: '/dashboard', icon: <DashboardOutlined />, roles: admin },
+  { label: 'Solicitudes', path: '/solicitudes', icon: <AssignmentOutlined />, roles: receptionist },
+  { label: 'Pacientes', path: '/pacientes', icon: <GroupOutlined />, roles: patients },
+  { label: 'Ingresos', path: '/ingresos', icon: <LocalHospitalOutlined />, roles: doctor },
+  { label: 'Camas', path: '/camas', icon: <HotelOutlined />, roles: admin },
+  { label: 'Pisos', path: '/pisos', icon: <ApartmentOutlined />, roles: admin },
+  { label: 'Usuarios', path: '/usuarios', icon: <ManageAccountsOutlined />, roles: admin },
+  { label: 'Roles', path: '/roles', icon: <AssignmentOutlined />, roles: admin },
+  { label: 'Movimientos', path: '/movimientos', icon: <SwapHorizOutlined />, roles: doctor },
 ];
 
 const TITLES: Array<[string, string]> = [
@@ -54,11 +70,26 @@ const TITLES: Array<[string, string]> = [
   ['/camas', 'Camas'],
   ['/pisos', 'Pisos y Habitaciones'],
   ['/movimientos', 'Movimientos'],
+  ['/usuarios', 'Usuarios'],
+  ['/roles', 'Roles'],
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { showToast } = useToast();
+  const visibleItems = NAV_ITEMS.filter((item) => user && item.roles.includes(user.rol));
   const pageTitle = TITLES.find(([path]) => (path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(path)))?.[1] ?? '';
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'No se pudo cerrar la sesión.', 'error');
+    }
+  };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -90,7 +121,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Stack>
 
       <List sx={{ px: 1.5, py: 2, flex: 1 }}>
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const active =
             item.path === '/dashboard'
               ? location.pathname === '/dashboard'
@@ -127,6 +158,24 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </List>
 
       <Box sx={{ p: 2 }}>
+        <Stack spacing={1.25} sx={{ mb: 1.5, px: 0.5 }}>
+          <Typography fontSize={12} color="#cbd5e1" fontWeight={700} noWrap>
+            {user?.nombreCompleto}
+          </Typography>
+          <Typography fontSize={11} color="#94a3b8" noWrap>
+            {user?.rol}
+          </Typography>
+          <Button
+            size="small"
+            color="inherit"
+            startIcon={<LogoutOutlined />}
+            onClick={() => void handleLogout()}
+            sx={{ justifyContent: 'flex-start', color: '#cbd5e1' }}
+          >
+            Cerrar sesión
+          </Button>
+        </Stack>
+        <Divider sx={{ borderColor: 'rgba(148,163,184,0.15)', mb: 1.5 }} />
         <Stack direction="row" spacing={1.5} alignItems="center" sx={{ borderRadius: 3, p: 1.5, bgcolor: 'rgba(148,163,184,0.1)' }}>
           <Avatar sx={{ width: 34, height: 34, bgcolor: '#334155', fontSize: 14, fontWeight: 700 }}>
             H

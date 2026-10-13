@@ -38,7 +38,7 @@ java -version
 
 1. En SQLyog conéctate a tu MySQL local.
 2. Ejecuta el script `schema.sql` de la raíz del repo
-   (crea la base `gestion_hospitalizacion` y las 7 tablas base).
+   (crea la base `gestion_hospitalizacion` y las 10 tablas del sistema).
 3. Configura tus credenciales reales en
    `src/main/resources/application-local.properties`
    (ese archivo NO se commitea). Ejemplo:
@@ -83,6 +83,25 @@ si la tabla de usuarios está vacía, la aplicación creará esa cuenta con rol
 administrador. La contraseña debe tener entre 8 y 72 caracteres. Si ya existe
 un usuario, esas variables no modifican su cuenta.
 
+En PowerShell, inicia el backend en la misma terminal en la que defines las
+variables. La contraseña se solicita sin mostrarla y no se escribe en archivos:
+
+```powershell
+$env:BOOTSTRAP_ADMIN_USER = Read-Host "Usuario administrador inicial"
+$securePassword = Read-Host "Contraseña inicial (8-72 caracteres)" -AsSecureString
+$passwordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+try {
+  $env:BOOTSTRAP_ADMIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPointer)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPointer)
+}
+$env:SPRING_PROFILES_ACTIVE = "local"
+.\mvnw.cmd spring-boot:run
+```
+
+Si detienes el servidor, vuelve a definir las variables antes de iniciarlo. No
+compartas ni guardes la contraseña en archivos versionados.
+
 El login REST es `POST /api/auth/login`; primero solicita un token CSRF con
 `GET /api/auth/csrf`. La sesión se conserva en una cookie HTTP y las escrituras
 requieren el token CSRF. `GET /api/auth/me` devuelve el usuario y la ruta inicial
@@ -93,6 +112,11 @@ La bitácora de las operaciones exitosas de registro, modificación y eliminaci�
 se consulta en `GET /api/auditorias` (solo administrador; muestra hasta 500
 eventos recientes). Solo se permite eliminar solicitudes que sigan pendientes;
 las solicitudes con una decisión conservan su historial.
+
+En el frontend, inicia sesión en `/login`. El administrador puede gestionar
+usuarios y roles; médicos acceden a pacientes e ingresos hospitalarios; y
+recepcionistas a pacientes y solicitudes. La interfaz filtra las opciones por
+rol y Spring Security vuelve a validar cada permiso en el backend.
 
 ## Frontend
 
