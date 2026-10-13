@@ -37,7 +37,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', path: '/', icon: <DashboardOutlined /> },
+  { label: 'Dashboard', path: '/dashboard', icon: <DashboardOutlined /> },
   { label: 'Solicitudes', path: '/solicitudes', icon: <AssignmentOutlined /> },
   { label: 'Pacientes', path: '/pacientes', icon: <GroupOutlined /> },
   { label: 'Ingresos', path: '/ingresos', icon: <LocalHospitalOutlined /> },
@@ -47,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const TITLES: Array<[string, string]> = [
-  ['/', 'Dashboard'],
+  ['/dashboard', 'Dashboard'],
   ['/solicitudes', 'Solicitudes'],
   ['/pacientes', 'Pacientes'],
   ['/ingresos', 'Ingresos hospitalarios'],
@@ -58,7 +58,7 @@ const TITLES: Array<[string, string]> = [
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
-  const pageTitle = TITLES.find(([path]) => (path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)))?.[1] ?? '';
+  const pageTitle = TITLES.find(([path]) => (path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(path)))?.[1] ?? '';
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -92,8 +92,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <List sx={{ px: 1.5, py: 2, flex: 1 }}>
         {NAV_ITEMS.map((item) => {
           const active =
-            item.path === '/'
-              ? location.pathname === '/'
+            item.path === '/dashboard'
+              ? location.pathname === '/dashboard'
               : location.pathname.startsWith(item.path);
           return (
             <Tooltip key={item.path} title={item.label} placement="right">
@@ -153,7 +153,7 @@ export function DashboardLayout() {
   const pageTitle = useMemo(
     () =>
       TITLES.find(([path]) =>
-        path === '/' ? location.pathname === '/' : location.pathname.startsWith(path),
+        path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(path),
       )?.[1] ?? 'Panel',
     [location.pathname],
   );
