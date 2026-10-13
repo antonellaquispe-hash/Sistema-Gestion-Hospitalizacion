@@ -94,3 +94,26 @@ CREATE TABLE IF NOT EXISTS solicitudes_hospitalizacion (
   estado VARCHAR(50),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------- Roles ----------------
+CREATE TABLE IF NOT EXISTS roles (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(40) NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY KEY (id),
+  CONSTRAINT uk_roles_nombre UNIQUE (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------- Usuarios ----------------
+CREATE TABLE IF NOT EXISTS usuarios (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  nombre_usuario VARCHAR(80) NOT NULL,
+  nombre_completo VARCHAR(160) NOT NULL,
+  contrasena_hash VARCHAR(100) NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  rol_id BIGINT NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT uk_usuarios_nombre_usuario UNIQUE (nombre_usuario),
+  CONSTRAINT fk_usuarios_rol FOREIGN KEY (rol_id)
+    REFERENCES roles (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

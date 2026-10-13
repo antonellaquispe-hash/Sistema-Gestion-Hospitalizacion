@@ -74,6 +74,14 @@ por defecto (ver `src/main/resources/application.properties`):
 La API queda en `http://localhost:8081/api`
 (puerto configurable con `SERVER_PORT`).
 
+### Usuarios y roles
+
+Al iniciar, la aplicación crea los roles `ADMINISTRADOR`, `MÉDICO` y
+`RECEPCIONISTA` si aún no existen. El backend ofrece operaciones de usuarios y
+roles bajo `/api/usuarios` y `/api/roles`; las contraseñas se almacenan con
+BCrypt y nunca se incluyen en las respuestas. La configuración de acceso y el
+inicio de sesión por rol se documentarán junto con la pantalla de autenticación.
+
 ## Frontend
 
 ```powershell

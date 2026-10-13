@@ -52,9 +52,9 @@
 2. **P3 - Usuarios y roles:** crear `model/Usuario.java` y `model/Rol.java`,
    sus repositorios, servicios y controladores; precargar roles requeridos y
    proteger contrasenas con BCrypt. Sin credenciales predeterminadas reales.
-3. **P5 - Seguridad:** agregar configuracion Spring Security, autenticacion y
-   permisos por rol en backend y login. Requiere autorizacion del usuario antes
-   de agregar la dependencia de seguridad.
+3. **P5 - Seguridad:** configurar Spring Security, autenticacion y permisos por
+   rol en backend y login. Spring Security fue autorizado para autenticacion,
+   autorizacion y BCrypt.
 4. **P2 - Auditoria:** crear entidad, repositorio y servicio de auditoria, y
    registrar operaciones de entidades principales con el usuario autenticado;
    exponer consulta de bitacora.
