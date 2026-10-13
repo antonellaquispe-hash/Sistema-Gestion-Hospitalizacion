@@ -77,10 +77,18 @@ La API queda en `http://localhost:8081/api`
 ### Usuarios y roles
 
 Al iniciar, la aplicación crea los roles `ADMINISTRADOR`, `MÉDICO` y
-`RECEPCIONISTA` si aún no existen. El backend ofrece operaciones de usuarios y
-roles bajo `/api/usuarios` y `/api/roles`; las contraseñas se almacenan con
-BCrypt y nunca se incluyen en las respuestas. La configuración de acceso y el
-inicio de sesión por rol se documentarán junto con la pantalla de autenticación.
+`RECEPCIONISTA` si aún no existen. Para el primer inicio de sesión, define
+`BOOTSTRAP_ADMIN_USER` y `BOOTSTRAP_ADMIN_PASSWORD` como variables de entorno;
+si la tabla de usuarios está vacía, la aplicación creará esa cuenta con rol
+administrador. La contraseña debe tener entre 8 y 72 caracteres. Si ya existe
+un usuario, esas variables no modifican su cuenta.
+
+El login REST es `POST /api/auth/login`; primero solicita un token CSRF con
+`GET /api/auth/csrf`. La sesión se conserva en una cookie HTTP y las escrituras
+requieren el token CSRF. `GET /api/auth/me` devuelve el usuario y la ruta inicial
+según su rol; `POST /api/auth/logout` cierra la sesión. Las operaciones de
+usuarios y roles bajo `/api/usuarios` y `/api/roles` requieren administrador.
+Las contraseñas se almacenan con BCrypt y nunca se incluyen en las respuestas.
 
 ## Frontend
 
