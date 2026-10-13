@@ -2,11 +2,13 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.model.Habitacion;
 import com.tecsup.Evaluacion.model.Piso;
 import com.tecsup.Evaluacion.repository.HabitacionRepository;
 import com.tecsup.Evaluacion.repository.PisoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +31,8 @@ public class HabitacionService {
         return repository.findByPisoIdWithPiso(pisoId);
     }
 
+    @Auditable(operacion = "REGISTRO", entidad = "Habitacion")
+    @Transactional
     public Habitacion crear(Habitacion habitacion) {
         if (habitacion.getNumero() == null || habitacion.getNumero().isBlank()) {
             throw new ReglaDeNegocioException("El número de la habitación es obligatorio");

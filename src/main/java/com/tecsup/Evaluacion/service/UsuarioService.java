@@ -4,6 +4,7 @@ import com.tecsup.Evaluacion.dto.CrearUsuarioRequest;
 import com.tecsup.Evaluacion.dto.EditarUsuarioRequest;
 import com.tecsup.Evaluacion.dto.RolResponse;
 import com.tecsup.Evaluacion.dto.UsuarioResponse;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.model.Rol;
@@ -38,6 +39,7 @@ public class UsuarioService {
     }
 
     @Transactional
+    @Auditable(operacion = "REGISTRO", entidad = "Usuario")
     public UsuarioResponse crear(CrearUsuarioRequest request) {
         String nombreUsuario = normalizeUsername(request.nombreUsuario());
         if (usuarioRepository.existsByNombreUsuarioIgnoreCase(nombreUsuario)) {
@@ -54,6 +56,7 @@ public class UsuarioService {
     }
 
     @Transactional
+    @Auditable(operacion = "MODIFICACION", entidad = "Usuario")
     public UsuarioResponse editar(Long id, EditarUsuarioRequest request) {
         Usuario usuario = obtenerUsuario(id);
         String nombreUsuario = normalizeUsername(request.nombreUsuario());
@@ -70,6 +73,7 @@ public class UsuarioService {
     }
 
     @Transactional
+    @Auditable(operacion = "MODIFICACION", entidad = "Usuario")
     public UsuarioResponse cambiarEstado(Long id, boolean activo) {
         Usuario usuario = obtenerUsuario(id);
         usuario.setActivo(activo);

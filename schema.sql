@@ -117,3 +117,15 @@ CREATE TABLE IF NOT EXISTS usuarios (
   CONSTRAINT fk_usuarios_rol FOREIGN KEY (rol_id)
     REFERENCES roles (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------- Auditoria ----------------
+CREATE TABLE IF NOT EXISTS auditorias (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  usuario VARCHAR(80) NOT NULL,
+  fecha_hora DATETIME NOT NULL,
+  operacion VARCHAR(20) NOT NULL,
+  entidad_afectada VARCHAR(100) NOT NULL,
+  identificador_registro VARCHAR(80) NOT NULL,
+  PRIMARY KEY (id),
+  INDEX idx_auditorias_fecha_hora (fecha_hora)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

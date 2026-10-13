@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .securityContextRepository(securityContextRepository))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/csrf", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auditorias/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/usuarios/**", "/api/roles/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/pacientes/**")
                         .hasAnyRole("ADMINISTRADOR", "MÉDICO", "RECEPCIONISTA")

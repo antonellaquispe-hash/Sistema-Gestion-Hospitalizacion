@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "solicitudes_hospitalizacion")
-public class SolicitudHospitalizacion {
+public class SolicitudHospitalizacion implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

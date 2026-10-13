@@ -2,11 +2,13 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.dto.RolRequest;
 import com.tecsup.Evaluacion.dto.RolResponse;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.model.Rol;
 import com.tecsup.Evaluacion.repository.RolRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +26,8 @@ public class RolService {
         return repository.findAll().stream().map(RolService::toResponse).toList();
     }
 
+    @Auditable(operacion = "REGISTRO", entidad = "Rol")
+    @Transactional
     public RolResponse crear(RolRequest request) {
         String nombre = normalize(request.nombre());
         if (repository.existsByNombreIgnoreCase(nombre)) {
@@ -35,6 +39,8 @@ public class RolService {
         return toResponse(repository.save(rol));
     }
 
+    @Auditable(operacion = "MODIFICACION", entidad = "Rol")
+    @Transactional
     public RolResponse editar(Long id, RolRequest request) {
         Rol rol = obtener(id);
         String nombre = normalize(request.nombre());
@@ -45,6 +51,8 @@ public class RolService {
         return toResponse(repository.save(rol));
     }
 
+    @Auditable(operacion = "MODIFICACION", entidad = "Rol")
+    @Transactional
     public RolResponse cambiarEstado(Long id, boolean activo) {
         Rol rol = obtener(id);
         rol.setActivo(activo);

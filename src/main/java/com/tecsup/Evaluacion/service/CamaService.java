@@ -2,11 +2,13 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.model.Habitacion;
 import com.tecsup.Evaluacion.repository.CamaRepository;
 import com.tecsup.Evaluacion.repository.HabitacionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +31,8 @@ public class CamaService {
         return repository.findDisponiblesConHabitacionYPiso();
     }
 
+    @Auditable(operacion = "REGISTRO", entidad = "Cama")
+    @Transactional
     public Cama crear(Cama cama) {
         if (cama.getEstado() == null || cama.getEstado().isBlank()) {
             throw new ReglaDeNegocioException("El estado de la cama es obligatorio");

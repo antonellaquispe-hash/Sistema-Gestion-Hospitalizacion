@@ -89,6 +89,10 @@ requieren el token CSRF. `GET /api/auth/me` devuelve el usuario y la ruta inicia
 según su rol; `POST /api/auth/logout` cierra la sesión. Las operaciones de
 usuarios y roles bajo `/api/usuarios` y `/api/roles` requieren administrador.
 Las contraseñas se almacenan con BCrypt y nunca se incluyen en las respuestas.
+La bitácora de las operaciones exitosas de registro, modificación y eliminación
+se consulta en `GET /api/auditorias` (solo administrador; muestra hasta 500
+eventos recientes). Solo se permite eliminar solicitudes que sigan pendientes;
+las solicitudes con una decisión conservan su historial.
 
 ## Frontend
 

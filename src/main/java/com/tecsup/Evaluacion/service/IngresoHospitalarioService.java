@@ -2,6 +2,7 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.model.IngresoHospitalario;
 import com.tecsup.Evaluacion.model.Movimiento;
@@ -33,6 +34,7 @@ public class IngresoHospitalarioService {
     private MovimientoRepository movimientoRepository;
 
     // RF-HOSP-07: Registrar ingreso hospitalario
+    @Auditable(operacion = "REGISTRO", entidad = "IngresoHospitalario")
     @Transactional
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
         Paciente paciente = pacienteRepository.findById(pacienteId)
@@ -48,6 +50,7 @@ public class IngresoHospitalarioService {
     }
 
     // RF-HOSP-14: Asignar cama disponible a paciente
+    @Auditable(operacion = "MODIFICACION", entidad = "IngresoHospitalario")
     @Transactional
     public IngresoHospitalario asignarCama(Long ingresoId, Long camaId) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
@@ -68,6 +71,7 @@ public class IngresoHospitalarioService {
     }
 
     // RF-HOSP-17: Trasladar paciente entre camas
+    @Auditable(operacion = "REGISTRO", entidad = "Movimiento")
     @Transactional
     public Movimiento trasladarPaciente(Long ingresoId, Long camaDestinoId,
                                         String motivo, String medicoResponsable,
@@ -124,6 +128,7 @@ public class IngresoHospitalarioService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
     }
 
+    @Auditable(operacion = "MODIFICACION", entidad = "IngresoHospitalario")
     @Transactional
     public IngresoHospitalario finalizarIngreso(Long id) {
         IngresoHospitalario ingreso = obtenerPorId(id);

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "habitaciones")
-public class Habitacion {
+public class Habitacion implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "camas")
-public class Cama {
+public class Cama implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

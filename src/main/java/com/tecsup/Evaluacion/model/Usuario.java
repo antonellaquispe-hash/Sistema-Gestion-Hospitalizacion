@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @Table(name = "usuarios", uniqueConstraints = {
         @UniqueConstraint(name = "uk_usuarios_nombre_usuario", columnNames = "nombre_usuario")
 })
-public class Usuario {
+public class Usuario implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
