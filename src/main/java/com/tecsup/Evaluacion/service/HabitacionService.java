@@ -20,7 +20,7 @@ public class HabitacionService {
     }
 
     public List<Habitacion> listar() {
-        return repository.findAll();
+        return repository.listarConPiso();
     }
 
     public List<Habitacion> listarPorPiso(Long pisoId) {
