@@ -12,6 +12,7 @@ import com.tecsup.Evaluacion.repository.MovimientoRepository;
 import com.tecsup.Evaluacion.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +33,7 @@ public class IngresoHospitalarioService {
     private MovimientoRepository movimientoRepository;
 
     // RF-HOSP-07: Registrar ingreso hospitalario
+    @Transactional
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
         Paciente paciente = pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado"));
@@ -46,6 +48,7 @@ public class IngresoHospitalarioService {
     }
 
     // RF-HOSP-14: Asignar cama disponible a paciente
+    @Transactional
     public IngresoHospitalario asignarCama(Long ingresoId, Long camaId) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
@@ -65,6 +68,7 @@ public class IngresoHospitalarioService {
     }
 
     // RF-HOSP-17: Trasladar paciente entre camas
+    @Transactional
     public Movimiento trasladarPaciente(Long ingresoId, Long camaDestinoId,
                                         String motivo, String medicoResponsable,
                                         String usuarioTraslado, String observaciones) {
@@ -120,6 +124,7 @@ public class IngresoHospitalarioService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
     }
 
+    @Transactional
     public IngresoHospitalario finalizarIngreso(Long id) {
         IngresoHospitalario ingreso = obtenerPorId(id);
 
