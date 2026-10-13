@@ -118,6 +118,32 @@ usuarios y roles; médicos acceden a pacientes e ingresos hospitalarios; y
 recepcionistas a pacientes y solicitudes. La interfaz filtra las opciones por
 rol y Spring Security vuelve a validar cada permiso en el backend.
 
+## Checklist de evidencias de la Evaluación 02
+
+- [ ] **P1 — Relaciones JPA:** mostrar `Paciente.ingresos`,
+  `IngresoHospitalario.paciente`, `IngresoHospitalario.movimientos`, y las
+  relaciones Piso–Habitación–Cama; verificar sus claves foráneas en SQLyog.
+- [ ] **P3 — Usuarios y roles:** mostrar `Usuario`, `Rol`, la FK
+  `usuarios.rol_id`, los tres roles iniciales, la gestión web y una contraseña
+  guardada como hash BCrypt (nunca revelar la contraseña de texto).
+- [ ] **P5 — Seguridad:** capturar el inicio de sesión, la ruta inicial por rol,
+  el menú filtrado y una respuesta `401`/`403` al intentar una petición no
+  autenticada o no permitida.
+- [ ] **P2 — Auditoría:** mostrar `auditorias` en SQLyog después de una operación
+  autenticada exitosa y la respuesta de `GET /api/auditorias` como
+  administrador. Cada fila incluye usuario, fecha/hora, operación, entidad e ID.
+- [ ] **P4 — Frontend:** capturar login; listado, registro, edición y estado de
+  usuarios; listado, registro, edición y estado de roles; y los menús de
+  administrador, médico y recepcionista.
+
+Las capturas sugeridas son: **1)** login; **2)** usuarios y formulario de
+registro/edición; **3)** roles y formulario de registro/edición; **4)** menú de
+administrador; **5)** menú y pacientes del médico; **6)** menú y solicitudes de
+recepción; **7)** usuario y su FK al rol en SQLyog; **8)** tabla `auditorias` con
+eventos generados y respuesta de su endpoint; **9)** respuesta de acceso no
+autorizado. Registra los eventos después de iniciar sesión; las peticiones
+rechazadas no se guardan como operaciones del dominio.
+
 ## Frontend
 
 ```powershell
