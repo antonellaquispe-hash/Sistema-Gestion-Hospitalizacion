@@ -1,5 +1,7 @@
 package com.tecsup.Evaluacion.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,14 +13,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<Map<String, String>> manejarNoEncontrado(RecursoNoEncontradoException ex) {
+        log.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("mensaje", ex.getMessage()));
     }
 
     @ExceptionHandler(ReglaDeNegocioException.class)
     public ResponseEntity<Map<String, String>> manejarReglaDeNegocio(ReglaDeNegocioException ex) {
+        log.warn("Regla de negocio: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("mensaje", ex.getMessage()));
     }
@@ -29,12 +35,14 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Datos inválidos");
+        log.warn("Validación: {}", mensaje);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("mensaje", mensaje));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> manejarErrorGlobal(Exception ex) {
+        log.error("Error interno no controlado", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("mensaje", "Error interno del servidor"));
     }
