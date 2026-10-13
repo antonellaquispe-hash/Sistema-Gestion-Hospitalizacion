@@ -6,19 +6,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   MenuItem,
   Paper,
   Select,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import {
   ApartmentOutlined,
   Add,
-  Delete,
   ExpandMore,
   HouseOutlined,
 } from '@mui/icons-material';
@@ -186,9 +183,6 @@ export function PisoPage() {
                               <HouseOutlined sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
                               <Typography variant="body2" sx={{ flexGrow: 1 }}>{h.numero}</Typography>
                               <Typography variant="body2" color="text.secondary">{h.descripcion}</Typography>
-                              <Tooltip title="Eliminar">
-                                <IconButton size="small"><Delete fontSize="small" /></IconButton>
-                              </Tooltip>
                             </Box>
                           ))
                         )}

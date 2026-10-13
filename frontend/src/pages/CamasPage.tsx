@@ -11,13 +11,11 @@ import { ErrorState } from '../components/ErrorState';
 const ESTADO_COLOR: Record<string, string> = {
   DISPONIBLE: '#0f766e',
   OCUPADA: '#b91c1c',
-  LIMPIEZA: '#b45309',
 };
 
 const ESTADO_LABEL: Record<string, string> = {
   DISPONIBLE: 'Disponible',
   OCUPADA: 'Ocupada',
-  LIMPIEZA: 'En limpieza',
 };
 
 export function CamasPage() {
@@ -48,8 +46,8 @@ export function CamasPage() {
       />
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {['DISPONIBLE', 'OCUPADA', 'LIMPIEZA'].map((estado) => (
-          <Grid item xs={12} sm={4} key={estado}>
+        {['DISPONIBLE', 'OCUPADA'].map((estado) => (
+          <Grid item xs={12} sm={6} key={estado}>
             <Paper elevation={0} sx={{ borderRadius: 3, p: 2, border: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: ESTADO_COLOR[estado] }} />
