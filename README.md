@@ -209,6 +209,37 @@ npm run build   # incluye tsc --noEmit + vite build
 
 ---
 
+## 🐛 Problemas conocidos y arreglos
+
+### Errores arreglados
+
+1. **Bug de serialización Jackson (ByteBuddyInterceptor)** - Los endpoints `PUT /api/ingresos/{id}/asignar-cama/{camaId}` y `PUT /api/ingresos/{id}/trasladar/{camaDestinoId}` devolvían 500 a pesar de guardar los datos en BD, debido a que Jackson intentaba serializar asociaciones lazy de Hibernate (`HibernateProxy` → `ByteBuddyInterceptor`).  
+   - **Raíz**: entidades devueltas con proxies lazy fuera de la transacción.  
+   - **Solución**: 
+     * `MovimientoRepository`: queries `listarConTodo()`, `findByIngresoIdConTodo()`, `buscarConTodoPorId` ahora usan `JOIN FETCH` en `cama.habitacion → piso`, `ingreso.cama → habitacion → piso`, y `ingreso.paciente`.
+     * `IngresoHospitalarioService`: `asignarCama()` y `trasladarPaciente()` re-consultan con `buscarConTodoPorId()` después del `save()` para devolver entidades totalmente inicializadas (sin proxies).
+
+2. **Nueva funcionalidad: "Registrar cama" en `CamasPage`**  
+   - Botón **+ Registrar cama** en el encabezado y en el estado vacío.  
+   - Diálogo MUI con selector de habitación (muestra `Hab. B1 · Quirofano`; si no hay habitaciones, avisa para crearlas en "Pisos y Habitaciones").  
+   - Toast de éxito y refresco automático de la lista.  
+   - **Backend asociado**: `CamaResponse` DTO que materializa `cama → habitación → piso` dentro de la transacción, por lo que `POST /api/camas` ahora responde **200** con JSON completo (antes daba 500).  
+   - El tipo `Cama` de TypeScript es compatible con la respuesta DTO, sin cambios en el frontend.
+
+3. **Corrección de tipos TypeScript**  
+   - `frontend/src/types/auth.ts`: `rol: string` → `rol: RolNombre`. Arreglaba 2 errores `TS2345` que bloqueaban `npm run build`.
+
+### Errores que aún faltan arreglar
+
+1. **README afirma `DELETE /api/usuarios` que no existe**  
+   - El controlador `UsuarioController` solo tiene GET, POST, PUT, PATCH (no DELETE).  
+   - El endpoint `PATCH /{id}/estado` es el correcto para cambiar el estado de un usuario.
+
+2. **Instrucción incorrecta del perfil en README**  
+   - El README indica `./mvnw spring-boot:run -Dspring.profiles.active=local`, pero ese flag **no alcanza la JVM forked** del plugin `spring-boot:run`.  
+   - La forma correcta es: `./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"` (como ya está documentado en los "Decisiones" del historial).
+
+---
 ## 👥 Equipo
 
 Evaluación 02 - Desarrollo de Aplicaciones Web - Equipo de 4 personas
