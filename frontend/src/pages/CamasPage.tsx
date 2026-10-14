@@ -14,7 +14,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';import { HotelOutlined, HomeOutlined, RoomOutlined } from '@mui/icons-material';
-import type { Habitacion, IngresoHospitalario } from '../types';
+import type { Cama, Habitacion, IngresoHospitalario } from '../types';
 import { camasApi, habitacionesApi } from '../api/camas';
 import { ingresosApi } from '../api/ingresos';
 import { useApi } from '../hooks/useApi';
@@ -25,11 +25,13 @@ import { ErrorState } from '../components/ErrorState';
 const ESTADO_COLOR: Record<string, string> = {
   DISPONIBLE: '#0f766e',
   OCUPADA: '#b91c1c',
+  LIMPIEZA: '#b45309',
 };
 
 const ESTADO_LABEL: Record<string, string> = {
   DISPONIBLE: 'Disponible',
   OCUPADA: 'Ocupada',
+  LIMPIEZA: 'Limpieza',
 };
 
 export function CamasPage() {
@@ -39,11 +41,17 @@ export function CamasPage() {
   const { showToast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Cama | null>(null);
+  const [estado, setEstado] = useState('DISPONIBLE');
+  const habitacionesActivas = (habitaciones.data ?? []).filter((h) => h.activo);
   const [habitacionId, setHabitacionId] = useState<number | ''>('');
   const [formError, setFormError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
 
   const abrirDialogo = () => {
+    setEditing(null);
+    setEstado('DISPONIBLE');
+    void habitaciones.refetch();
     setHabitacionId('');
     setFormError(undefined);
     setDialogOpen(true);
@@ -61,12 +69,13 @@ export function CamasPage() {
     }
     setSaving(true);
     try {
-      await camasApi.crear({
-        id: 0,
-        estado: 'DISPONIBLE',
+      const input = {
+        estado,
         habitacion: { id: habitacionId } as Habitacion,
-      });
-      showToast('Cama registrada correctamente.', 'success');
+      };
+      if (editing) await camasApi.editar(editing.id, input);
+      else await camasApi.crear(input);
+      showToast(editing ? 'Cama actualizada correctamente.' : 'Cama registrada correctamente.', 'success');
       cerrarDialogo();
       void camas.refetch();
     } catch (e) {
@@ -84,7 +93,7 @@ export function CamasPage() {
     return map;
   }, [ingresos.data]);
 
-  const disponibles = (camas.data ?? []).filter((c) => c.estado === 'DISPONIBLE').length;
+  const disponibles = (camas.data ?? []).filter((c) => c.estado === 'DISPONIBLE' && c.habitacion?.activo).length;
 
   return (
     <Box>
@@ -102,8 +111,8 @@ export function CamasPage() {
       />
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {['DISPONIBLE', 'OCUPADA'].map((estado) => (
-          <Grid item xs={12} sm={6} key={estado}>
+        {['DISPONIBLE', 'OCUPADA', 'LIMPIEZA'].map((estado) => (
+          <Grid item xs={12} sm={4} key={estado}>
             <Paper elevation={0} sx={{ borderRadius: 3, p: 2, border: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: ESTADO_COLOR[estado] }} />
@@ -194,10 +203,19 @@ export function CamasPage() {
                         </>
                       ) : (
                         <Typography variant="caption" color="text.secondary">
-                          {cama.estado === 'DISPONIBLE' ? 'Cama libre para asignar' : 'Sin asignación activa'}
+                          {!habitacion?.activo ? 'Habitación inactiva: no asignable' : cama.estado === 'DISPONIBLE' ? 'Cama libre para asignar' : 'Sin asignación activa'}
                         </Typography>
                       )}
                     </Box>
+                    <Button size="small" disabled={cama.estado === 'OCUPADA'} onClick={() => {
+                      setEditing(cama);
+                      setHabitacionId(cama.habitacion?.id ?? '');
+                      setEstado(cama.estado);
+                      setFormError(undefined);
+                      void habitaciones.refetch();
+                      setDialogOpen(true);
+                    }}>Editar cama</Button>
+                    {cama.estado === 'OCUPADA' && <Typography variant="caption" display="block">Gestiona el traslado o alta desde Ingresos.</Typography>}
                   </Paper>
                 </Grid>
               );
@@ -212,11 +230,12 @@ export function CamasPage() {
         </Typography>
       </Paper>
 
-      <Dialog open={dialogOpen} onClose={cerrarDialogo} maxWidth="xs" fullWidth>
-        <DialogTitle>Registrar Cama</DialogTitle>
+      <Dialog open={dialogOpen} onClose={saving ? undefined : cerrarDialogo} maxWidth="xs" fullWidth>
+        <DialogTitle>{editing ? 'Editar cama' : 'Registrar cama'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            {(habitaciones.data ?? []).length === 0 ? (
+            {habitaciones.error && <ErrorState message={habitaciones.error} onRetry={() => void habitaciones.refetch()} />}
+            {habitacionesActivas.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
                 No hay habitaciones registradas. Primero crea una habitación en el módulo
                 “Pisos y Habitaciones” para poder asignarle camas.
@@ -239,7 +258,7 @@ export function CamasPage() {
                     : `Habitación #${v}`;
                 }}
               >
-                {(habitaciones.data ?? []).map((h) => (
+                {habitacionesActivas.map((h) => (
                   <MenuItem key={h.id} value={h.id}>
                     {`Hab. ${h.numero}${h.piso ? ` · ${h.piso.nombre}` : ''}`}
                   </MenuItem>
@@ -249,19 +268,20 @@ export function CamasPage() {
             {formError && (
               <Typography variant="body2" color="error">{formError}</Typography>
             )}
-            <Typography variant="caption" color="text.secondary">
-              La cama se registrará con estado “Disponible”.
-            </Typography>
+            <Select value={estado} onChange={(e) => setEstado(e.target.value)} inputProps={{ 'aria-label': 'Estado de cama' }}>
+              <MenuItem value="DISPONIBLE">Disponible</MenuItem>
+              <MenuItem value="LIMPIEZA">Limpieza</MenuItem>
+            </Select>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={cerrarDialogo} color="inherit">
+          <Button onClick={cerrarDialogo} color="inherit" disabled={saving}>
             Cancelar
           </Button>
           <Button
             variant="contained"
             onClick={handleCrearCama}
-            disabled={saving || (habitaciones.data ?? []).length === 0}
+            disabled={saving || habitacionesActivas.length === 0 || Boolean(habitaciones.error)}
           >
             {saving ? 'Guardando…' : 'Guardar'}
           </Button>

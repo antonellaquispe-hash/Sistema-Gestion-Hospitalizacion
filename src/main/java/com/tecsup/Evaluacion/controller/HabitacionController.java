@@ -30,4 +30,14 @@ public class HabitacionController {
     public Habitacion crear(@RequestBody Habitacion habitacion) {
         return habitacionService.crear(habitacion);
     }
+
+    @PutMapping("/{id}")
+    public Habitacion editar(@PathVariable Long id, @RequestBody Habitacion habitacion) {
+        return habitacionService.editar(id, habitacion);
+    }
+
+    @PatchMapping("/{id}/estado")
+    public Habitacion cambiarEstado(@PathVariable Long id, @RequestParam boolean activo) {
+        return habitacionService.cambiarEstado(id, activo);
+    }
 }

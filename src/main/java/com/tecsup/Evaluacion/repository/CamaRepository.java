@@ -18,6 +18,8 @@ public interface CamaRepository extends JpaRepository<Cama, Long> {
     @Query("SELECT c FROM Cama c JOIN FETCH c.habitacion h JOIN FETCH h.piso")
     List<Cama> listarConHabitacionYPiso();
 
-    @Query("SELECT c FROM Cama c JOIN FETCH c.habitacion h JOIN FETCH h.piso WHERE c.estado = 'DISPONIBLE'")
+    @Query("SELECT c FROM Cama c JOIN FETCH c.habitacion h JOIN FETCH h.piso WHERE c.estado = 'DISPONIBLE' AND h.activo = true")
     List<Cama> findDisponiblesConHabitacionYPiso();
+
+    boolean existsByHabitacionIdAndEstado(Long habitacionId, String estado);
 }

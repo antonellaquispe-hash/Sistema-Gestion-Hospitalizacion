@@ -31,6 +31,7 @@ public class PacienteService {
     @Auditable(operacion = "REGISTRO", entidad = "Paciente")
     @Transactional
     public Paciente crear(Paciente paciente) {
+        paciente.setId(null);
         if (paciente.getNombre() == null || paciente.getNombre().isBlank()) {
             throw new ReglaDeNegocioException("El nombre del paciente es obligatorio");
         }
@@ -39,6 +40,12 @@ public class PacienteService {
         }
         if (repository.existsByDni(paciente.getDni())) {
             throw new ReglaDeNegocioException("Ya existe un paciente con el DNI " + paciente.getDni());
+        }
+        if (!paciente.getDni().matches("[0-9]{8}")) {
+            throw new ReglaDeNegocioException("El DNI debe contener exactamente 8 dígitos");
+        }
+        if (paciente.getNombre().length() > 150) {
+            throw new ReglaDeNegocioException("El nombre no puede superar 150 caracteres");
         }
         return repository.save(paciente);
     }

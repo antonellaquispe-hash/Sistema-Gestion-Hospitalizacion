@@ -65,7 +65,9 @@ public class UsuarioService {
         }
         usuario.setNombreUsuario(nombreUsuario);
         usuario.setNombreCompleto(request.nombreCompleto().trim());
-        usuario.setRol(obtenerRolActivo(request.rolId()));
+        if (!usuario.getRol().getId().equals(request.rolId())) {
+            usuario.setRol(obtenerRolActivo(request.rolId()));
+        }
         if (request.contrasena() != null && !request.contrasena().isBlank()) {
             usuario.setContrasenaHash(passwordEncoder.encode(request.contrasena()));
         }

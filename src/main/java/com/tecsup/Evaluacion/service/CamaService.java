@@ -35,6 +35,25 @@ public class CamaService {
     @Auditable(operacion = "REGISTRO", entidad = "Cama")
     @Transactional
     public CamaResponse crear(Cama cama) {
+        cama.setId(null);
+        validar(cama);
+        return CamaResponse.desde(repository.save(cama));
+    }
+
+    @Auditable(operacion = "MODIFICACION", entidad = "Cama")
+    @Transactional
+    public CamaResponse editar(Long id, Cama datos) {
+        Cama cama = repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Cama no encontrada"));
+        if ("OCUPADA".equalsIgnoreCase(cama.getEstado())) {
+            throw new ReglaDeNegocioException("La cama está ocupada; gestione el traslado o alta desde Ingresos");
+        }
+        validar(datos);
+        cama.setEstado(datos.getEstado());
+        cama.setHabitacion(datos.getHabitacion());
+        return CamaResponse.desde(repository.save(cama));
+    }
+
+    private void validar(Cama cama) {
         if (cama.getEstado() == null || cama.getEstado().isBlank()) {
             throw new ReglaDeNegocioException("El estado de la cama es obligatorio");
         }
@@ -43,9 +62,12 @@ public class CamaService {
         }
         Habitacion habitacion = habitacionRepository.findById(cama.getHabitacion().getId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Habitación no encontrada"));
+        if (!habitacion.isActivo()) {
+            throw new ReglaDeNegocioException("La habitación está inactiva");
+        }
+        if (!java.util.Set.of("DISPONIBLE", "LIMPIEZA").contains(cama.getEstado())) {
+            throw new ReglaDeNegocioException("El estado debe ser DISPONIBLE o LIMPIEZA; la ocupación se gestiona desde Ingresos");
+        }
         cama.setHabitacion(habitacion);
-        Cama guardada = repository.save(cama);
-        // Se mapea dentro de la transacción: las asociaciones siguen inicializadas
-        return CamaResponse.desde(guardada);
     }
 }

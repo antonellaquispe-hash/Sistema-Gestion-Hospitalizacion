@@ -25,4 +25,9 @@ public class PisoController {
     public Piso crear(@RequestBody Piso piso) {
         return service.crear(piso);
     }
+
+    @PutMapping("/{id}")
+    public Piso editar(@PathVariable Long id, @RequestBody Piso piso) {
+        return service.editar(id, piso);
+    }
 }

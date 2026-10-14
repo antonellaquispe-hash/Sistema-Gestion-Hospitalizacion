@@ -34,3 +34,5 @@ build/
 
 ### Credenciales locales ###
 application-local.properties
+cafecampus-base/
+migrations/

@@ -37,6 +37,9 @@ public class IngresoHospitalarioService {
     @Auditable(operacion = "REGISTRO", entidad = "IngresoHospitalario")
     @Transactional
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
+        if (motivo == null || motivo.isBlank() || motivo.length() > 500) {
+            throw new ReglaDeNegocioException("El motivo es obligatorio y debe tener como máximo 500 caracteres");
+        }
         Paciente paciente = pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado"));
 
@@ -56,10 +59,17 @@ public class IngresoHospitalarioService {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
 
+        if (!"ACTIVO".equalsIgnoreCase(ingreso.getEstado())) {
+            throw new ReglaDeNegocioException("Solo se puede asignar una cama a un ingreso activo");
+        }
+        if (ingreso.getCama() != null) {
+            throw new ReglaDeNegocioException("El ingreso ya tiene cama; utilice el traslado");
+        }
+
         Cama cama = camaRepository.findById(camaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cama no encontrada"));
 
-        if (!"DISPONIBLE".equalsIgnoreCase(cama.getEstado())) {
+        if (!cama.getHabitacion().isActivo() || !"DISPONIBLE".equalsIgnoreCase(cama.getEstado())) {
             throw new ReglaDeNegocioException("La cama seleccionada no se encuentra disponible");
         }
 
@@ -82,6 +92,16 @@ public class IngresoHospitalarioService {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
 
+        if (!"ACTIVO".equalsIgnoreCase(ingreso.getEstado())) {
+            throw new ReglaDeNegocioException("Solo se pueden trasladar ingresos activos");
+        }
+        if (motivo == null || motivo.isBlank() || motivo.length() > 500
+                || medicoResponsable == null || medicoResponsable.isBlank() || medicoResponsable.length() > 150
+                || usuarioTraslado == null || usuarioTraslado.isBlank() || usuarioTraslado.length() > 100
+                || (observaciones != null && observaciones.length() > 1000)) {
+            throw new ReglaDeNegocioException("Los datos del traslado son obligatorios o exceden la longitud permitida");
+        }
+
         Cama camaOrigen = ingreso.getCama();
         if (camaOrigen == null) {
             throw new ReglaDeNegocioException("El paciente no cuenta con una cama asignada para trasladar");
@@ -94,7 +114,7 @@ public class IngresoHospitalarioService {
             throw new ReglaDeNegocioException("La cama de destino debe ser diferente a la cama de origen");
         }
 
-        if (!"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
+        if (!camaDestino.getHabitacion().isActivo() || !"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
             throw new ReglaDeNegocioException("La cama de destino no se encuentra disponible");
         }
 

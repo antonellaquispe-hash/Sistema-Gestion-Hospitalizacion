@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `pisos` (
 CREATE TABLE IF NOT EXISTS `habitaciones` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `numero` VARCHAR(20) NOT NULL,
+  `activo` BOOLEAN NOT NULL DEFAULT TRUE,
   `descripcion` VARCHAR(255),
   `piso_id` BIGINT NOT NULL,
   PRIMARY KEY (`id`),
@@ -131,17 +132,6 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   PRIMARY KEY (`id`),
   CONSTRAINT `uk_usuarios_nombre_usuario` UNIQUE (`nombre_usuario`),
   CONSTRAINT `fk_usuarios_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =====================================================================
--- TABLA: usuario_roles (relación ManyToMany)
--- =====================================================================
-CREATE TABLE IF NOT EXISTS `usuario_roles` (
-  `usuario_id` BIGINT NOT NULL,
-  `rol_id` BIGINT NOT NULL,
-  PRIMARY KEY (`usuario_id`, `rol_id`),
-  CONSTRAINT `fk_usuario_rol_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_usuario_rol_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================

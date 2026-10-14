@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "habitaciones")
 public class Habitacion implements EntidadIdentificable {
 
@@ -15,6 +16,12 @@ public class Habitacion implements EntidadIdentificable {
 
     private String numero;
     private String descripcion;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "piso_id", nullable = false,

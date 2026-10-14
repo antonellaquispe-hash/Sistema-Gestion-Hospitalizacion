@@ -109,6 +109,7 @@ export function UsuariosPage() {
   };
 
   const activeRoles = roles.filter((rol) => rol.activo);
+  const selectableRoles = roles.filter((rol) => rol.activo || rol.id === editing?.rol.id);
 
   return (
     <>
@@ -161,7 +162,7 @@ export function UsuariosPage() {
               <FormControl required>
                 <InputLabel id="usuario-rol-label">Rol</InputLabel>
                 <Select labelId="usuario-rol-label" label="Rol" value={form.rolId} onChange={(event) => setForm({ ...form, rolId: Number(event.target.value) })}>
-                  {activeRoles.map((rol) => <MenuItem key={rol.id} value={rol.id}>{rol.nombre}</MenuItem>)}
+                  {selectableRoles.map((rol) => <MenuItem key={rol.id} value={rol.id}>{rol.nombre}{rol.activo ? '' : ' (inactivo)'}</MenuItem>)}
                 </Select>
               </FormControl>
               {activeRoles.length === 0 && <Alert severity="warning">Primero registra y activa un rol.</Alert>}
@@ -169,7 +170,7 @@ export function UsuariosPage() {
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2.5 }}>
             <Button color="inherit" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={saving || activeRoles.length === 0}>{saving ? 'Guardando…' : 'Guardar'}</Button>
+            <Button type="submit" variant="contained" disabled={saving || selectableRoles.length === 0}>{saving ? 'Guardando…' : 'Guardar'}</Button>
           </DialogActions>
         </Stack>
       </Dialog>

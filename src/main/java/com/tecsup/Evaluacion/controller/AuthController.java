@@ -60,6 +60,9 @@ public class AuthController {
                     .body(Map.of("mensaje", "Usuario o contraseña incorrectos"));
         }
 
+        if (servletRequest.getSession(false) != null) {
+            servletRequest.changeSessionId();
+        }
         SecurityContextHolderStrategy strategy = SecurityContextHolder.getContextHolderStrategy();
         SecurityContext context = strategy.createEmptyContext();
         context.setAuthentication(authentication);

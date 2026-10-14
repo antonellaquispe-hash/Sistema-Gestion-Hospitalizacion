@@ -24,7 +24,7 @@ public record CamaResponse(
             return null;
         }
         return new HabitacionResponse(habitacion.getId(), habitacion.getNumero(),
-                habitacion.getDescripcion(), piso(habitacion.getPiso()));
+                habitacion.getDescripcion(), piso(habitacion.getPiso()), habitacion.isActivo());
     }
 
     private static PisoResponse piso(Piso piso) {
@@ -38,7 +38,8 @@ public record CamaResponse(
             Long id,
             String numero,
             String descripcion,
-            PisoResponse piso
+            PisoResponse piso,
+            boolean activo
     ) {}
 
     public record PisoResponse(
