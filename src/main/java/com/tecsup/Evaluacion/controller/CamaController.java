@@ -1,5 +1,6 @@
 package com.tecsup.Evaluacion.controller;
 
+import com.tecsup.Evaluacion.dto.CamaResponse;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.service.CamaService;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class CamaController {
     }
 
     @PostMapping
-    public Cama crear(@RequestBody Cama cama) {
+    public CamaResponse crear(@RequestBody Cama cama) {
         return service.crear(cama);
     }
 }

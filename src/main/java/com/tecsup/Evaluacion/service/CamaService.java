@@ -3,6 +3,7 @@ package com.tecsup.Evaluacion.service;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.audit.Auditable;
+import com.tecsup.Evaluacion.dto.CamaResponse;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.model.Habitacion;
 import com.tecsup.Evaluacion.repository.CamaRepository;
@@ -33,7 +34,7 @@ public class CamaService {
 
     @Auditable(operacion = "REGISTRO", entidad = "Cama")
     @Transactional
-    public Cama crear(Cama cama) {
+    public CamaResponse crear(Cama cama) {
         if (cama.getEstado() == null || cama.getEstado().isBlank()) {
             throw new ReglaDeNegocioException("El estado de la cama es obligatorio");
         }
@@ -43,6 +44,8 @@ public class CamaService {
         Habitacion habitacion = habitacionRepository.findById(cama.getHabitacion().getId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Habitación no encontrada"));
         cama.setHabitacion(habitacion);
-        return repository.save(cama);
+        Cama guardada = repository.save(cama);
+        // Se mapea dentro de la transacción: las asociaciones siguen inicializadas
+        return CamaResponse.desde(guardada);
     }
 }
