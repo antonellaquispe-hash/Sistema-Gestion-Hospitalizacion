@@ -152,7 +152,7 @@ export function IngresosPage() {
     setAsignarSaving(true);
     try {
       const actualizado = await ingresosApi.asignarCama(asignar.ingreso.id, asignar.cama.id);
-      showToast(`Cama #${asignar.cama.id} asignada al ingreso.`, 'success');
+      showToast(`Cama ${asignar.cama.id} asignada al ingreso.`, 'success');
       setAsignar(null);
       void refetch();
       if (detalle?.id === actualizado.id) abrirDetalle(actualizado);
@@ -315,7 +315,7 @@ export function IngresosPage() {
                     <TableCell>{formatDateTime(i.fechaIngreso)}</TableCell>
                     <TableCell>
                       {i.cama ? (
-                        <Chip label={`Cama #${i.cama.id}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                        <Chip label={`Cama ${i.cama.id}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
                       ) : (
                         <Typography variant="caption" color="text.secondary">
                           Sin asignar
@@ -428,7 +428,7 @@ export function IngresosPage() {
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Paciente: <strong>{trasladar?.paciente?.nombre}</strong> · Cama actual:{' '}
-                <strong>#{trasladar?.cama?.id ?? '—'}</strong>
+                <strong>Cama {trasladar?.cama?.id ?? '—'}</strong>
               </Typography>
             </Box>
             <CamaSelect
@@ -487,8 +487,8 @@ export function IngresosPage() {
         description={
           <span>
             Se moverá a <strong>{trasladar?.paciente?.nombre}</strong> de la cama{' '}
-            <strong>#{trasladar?.cama?.id}</strong> a la cama{' '}
-            <strong>#{trasladarForm.camaDestino?.id}</strong>. La cama de origen quedará disponible.
+            <strong>Cama {trasladar?.cama?.id}</strong> a la cama{' '}
+            <strong>Cama {trasladarForm.camaDestino?.id}</strong>. La cama de origen quedará disponible.
           </span>
         }
         confirmLabel="Confirmar traslado"
@@ -655,7 +655,7 @@ function CamaSelect({
     <Autocomplete<Cama>
       options={camas}
       loading={loading}
-      getOptionLabel={(c) => `Cama #${c.id}`}
+      getOptionLabel={(c) => `Cama ${c.id}`}
       onChange={(_e, value) => onSelect(value)}
       renderInput={(params) => (
         <TextField

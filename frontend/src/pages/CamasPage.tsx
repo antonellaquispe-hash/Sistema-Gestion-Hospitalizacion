@@ -191,7 +191,15 @@ export function CamasPage() {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <HotelOutlined sx={{ color: 'primary.main' }} />
-                        <Typography fontWeight={800}>Cama #{cama.id}</Typography>
+                        <Typography fontWeight={800}>
+                          Cama {cama.id}
+                          {cama.habitacion && (
+                            <> · Hab. {cama.habitacion.numero}</>
+                          )}
+                          {cama.habitacion?.piso && (
+                            <> · {cama.habitacion.piso.nombre}</>
+                          )}
+                        </Typography>
                       </Box>
                       <Chip
                         label={cama.estado === 'DISPONIBLE' ? 'Libre' : cama.estado}

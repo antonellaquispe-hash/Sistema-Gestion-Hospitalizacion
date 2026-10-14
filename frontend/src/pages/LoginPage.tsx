@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { Alert, Box, Button, Card, CardContent, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import LocalHospitalOutlined from '@mui/icons-material/LocalHospitalOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 
@@ -10,6 +12,7 @@ export function LoginPage() {
   const location = useLocation();
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -42,7 +45,27 @@ export function LoginPage() {
             </Stack>
             {error && <Alert severity="error">{error}</Alert>}
             <TextField label="Usuario" value={nombreUsuario} onChange={(event) => setNombreUsuario(event.target.value)} required autoComplete="username" autoFocus />
-            <TextField label="Contraseña" type="password" value={contrasena} onChange={(event) => setContrasena(event.target.value)} required autoComplete="current-password" />
+            <TextField
+              label="Contraseña"
+              type={mostrarContrasena ? 'text' : 'password'}
+              value={contrasena}
+              onChange={(event) => setContrasena(event.target.value)}
+              required
+              autoComplete="current-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setMostrarContrasena((v) => !v)}
+                      edge="end"
+                      aria-label={mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {mostrarContrasena ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
             <Button type="submit" variant="contained" size="large" disabled={saving}>
               {saving ? 'Ingresando…' : 'Iniciar sesión'}
             </Button>

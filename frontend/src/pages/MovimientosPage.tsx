@@ -185,10 +185,10 @@ export function MovimientosPage() {
                     <TableCell>{formatDateTime(m.fechaTraslado)}</TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip label={`#${m.camaOrigen.id}`} size="small" variant="outlined" />
+                        <Chip label={`Cama ${m.camaOrigen.id}`} size="small" variant="outlined" />
                         <ArrowForward sx={{ fontSize: 18, color: 'text.secondary' }} />
                         <Chip
-                          label={`#${m.camaDestino.id}`}
+                          label={`Cama ${m.camaDestino.id}`}
                           size="small"
                           sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 700 }}
                         />
@@ -245,14 +245,16 @@ export function MovimientosPage() {
               <MenuItem value="">Selecciona un ingreso activo</MenuItem>
               {activeIngresos.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
-                  Ingreso #{i.id} · {i.paciente?.nombre ?? 'Paciente'} · Cama #{i.cama?.id ?? '—'}
+                  Ingreso #{i.id} · {i.paciente?.nombre ?? 'Paciente'} · Cama {i.cama?.id ?? '—'}{' '}
+                  {i.cama?.habitacion ? `(Hab. ${i.cama.habitacion.numero})` : ''}
                 </MenuItem>
               ))}
             </Select>
             {errors.ingresoId && <Typography variant="caption" color="error">{errors.ingresoId}</Typography>}
             {selectedIngreso && (
               <Typography variant="body2" color="text.secondary">
-                Cama de origen actual: #{selectedIngreso.cama?.id ?? '—'}
+                Cama de origen actual: {selectedIngreso.cama?.id ?? '—'}{' '}
+                {selectedIngreso.cama?.habitacion ? `(Hab. ${selectedIngreso.cama.habitacion.numero})` : ''}
               </Typography>
             )}
             <Select
@@ -265,7 +267,7 @@ export function MovimientosPage() {
               <MenuItem value="">Selecciona cama de destino</MenuItem>
               {(camas.data ?? []).map((c) => (
                 <MenuItem key={c.id} value={c.id}>
-                  Cama #{c.id} · {c.habitacion ? `Hab. ${c.habitacion.numero}${c.habitacion.piso ? ` · ${c.habitacion.piso.nombre}` : ''}` : ''}
+                  Cama {c.id} · {c.habitacion ? `Hab. ${c.habitacion.numero}${c.habitacion.piso ? ` · ${c.habitacion.piso.nombre}` : ''}` : ''}
                 </MenuItem>
               ))}
             </Select>
