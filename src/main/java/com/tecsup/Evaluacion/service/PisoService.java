@@ -25,9 +25,28 @@ public class PisoService {
     @Auditable(operacion = "REGISTRO", entidad = "Piso")
     @Transactional
     public Piso crear(Piso piso) {
+        piso.setId(null);
+        validar(piso);
+        return repository.save(piso);
+    }
+
+    @Auditable(operacion = "MODIFICACION", entidad = "Piso")
+    @Transactional
+    public Piso editar(Long id, Piso datos) {
+        Piso piso = repository.findById(id).orElseThrow(() ->
+                new com.tecsup.Evaluacion.exception.RecursoNoEncontradoException("Piso no encontrado"));
+        validar(datos);
+        piso.setNombre(datos.getNombre().trim());
+        piso.setDescripcion(datos.getDescripcion());
+        return repository.save(piso);
+    }
+
+    private void validar(Piso piso) {
         if (piso.getNombre() == null || piso.getNombre().isBlank()) {
             throw new ReglaDeNegocioException("El nombre del piso es obligatorio");
         }
-        return repository.save(piso);
+        if (piso.getNombre().length() > 100 || (piso.getDescripcion() != null && piso.getDescripcion().length() > 255)) {
+            throw new ReglaDeNegocioException("Nombre máximo 100 caracteres y descripción máximo 255");
+        }
     }
 }

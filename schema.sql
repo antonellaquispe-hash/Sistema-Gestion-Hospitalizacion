@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `pisos` (
 CREATE TABLE IF NOT EXISTS `habitaciones` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `numero` VARCHAR(20) NOT NULL,
+  `activo` BOOLEAN NOT NULL DEFAULT TRUE,
   `descripcion` VARCHAR(255),
   `piso_id` BIGINT NOT NULL,
   PRIMARY KEY (`id`),

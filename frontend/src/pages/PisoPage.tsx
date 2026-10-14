@@ -31,7 +31,23 @@ export function PisoPage() {
   const { showToast } = useToast();
 
   const { data: pisos, loading, error, refetch } = useApi(() => pisosApi.listar(), []);
-  const { data: habitaciones, refetch: refetchHabs } = useApi(() => habitacionesApi.listar(), []);
+  const { data: habitaciones, error: habitacionesError, refetch: refetchHabs } = useApi(() => habitacionesApi.listar(), []);
+  const [editingPiso, setEditingPiso] = useState<number | null>(null);
+  const [editingHab, setEditingHab] = useState<number | null>(null);
+  const [changingEstado, setChangingEstado] = useState<number | null>(null);
+
+  const cambiarEstado = async (habitacion: Habitacion) => {
+    setChangingEstado(habitacion.id);
+    try {
+      await habitacionesApi.cambiarEstado(habitacion.id, !habitacion.activo);
+      showToast(habitacion.activo ? 'Habitación desactivada.' : 'Habitación activada.', 'success');
+      await refetchHabs();
+    } catch (cause) {
+      showToast(cause instanceof Error ? cause.message : 'No se pudo cambiar el estado.', 'error');
+    } finally {
+      setChangingEstado(null);
+    }
+  };
 
   const [pisoDialogOpen, setPisoDialogOpen] = useState(false);
   const [pisoForm, setPisoForm] = useState<{ nombre: string; descripcion: string }>({ nombre: '', descripcion: '' });
@@ -56,8 +72,10 @@ export function PisoPage() {
     if (Object.keys(errors).length > 0) return;
     setPisoSaving(true);
     try {
-      await pisosApi.crear({ nombre: pisoForm.nombre.trim(), descripcion: pisoForm.descripcion.trim(), id: 0 });
-      showToast('Piso registrado correctamente.', 'success');
+      const input = { nombre: pisoForm.nombre.trim(), descripcion: pisoForm.descripcion.trim() };
+      if (editingPiso !== null) await pisosApi.editar(editingPiso, input);
+      else await pisosApi.crear(input);
+      showToast('Piso guardado correctamente.', 'success');
       setPisoDialogOpen(false);
       setPisoForm({ nombre: '', descripcion: '' });
       setPisoErrors({});
@@ -77,13 +95,14 @@ export function PisoPage() {
     if (Object.keys(errors).length > 0) return;
     setHabSaving(true);
     try {
-      await habitacionesApi.crear({
-        id: 0,
+      const input = {
         numero: habForm.numero.trim(),
         descripcion: habForm.descripcion.trim(),
         piso: { id: habForm.pisoId as number } as Piso,
-      });
-      showToast('Habitación registrada correctamente.', 'success');
+      };
+      if (editingHab !== null) await habitacionesApi.editar(editingHab, input);
+      else await habitacionesApi.crear(input);
+      showToast('Habitación guardada correctamente.', 'success');
       setHabDialogOpen(false);
       setHabForm({ numero: '', descripcion: '', pisoId: '' });
       setHabErrors({});
@@ -115,11 +134,17 @@ export function PisoPage() {
         subtitle="Gestiona los pisos, habitaciones y camas del hospital."
         breadcrumb="Pisos"
         actionLabel="Registrar piso"
-        onAction={() => setPisoDialogOpen(true)}
-        onRefresh={() => void refetch()}
+        onAction={() => {
+          setEditingPiso(null);
+          setPisoForm({ nombre: '', descripcion: '' });
+          setPisoErrors({});
+          setPisoDialogOpen(true);
+        }}
+        onRefresh={() => { void refetch(); void refetchHabs(); }}
         loading={loading}
       />
 
+      {habitacionesError && <ErrorState message={habitacionesError} onRetry={() => void refetchHabs()} />}
       {error ? (
         <ErrorState message={error} onRetry={() => void refetch()} />
       ) : (
@@ -162,6 +187,13 @@ export function PisoPage() {
                     <Typography variant="body2" color="text.secondary">
                       {habs.length} hab(s)
                     </Typography>
+                    <Button onClick={(event) => {
+                      event.stopPropagation();
+                      setEditingPiso(piso.id);
+                      setPisoForm({ nombre: piso.nombre, descripcion: piso.descripcion ?? '' });
+                      setPisoErrors({});
+                      setPisoDialogOpen(true);
+                    }}>Editar piso</Button>
                     <ExpandMore
                       sx={{
                         transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
@@ -183,6 +215,16 @@ export function PisoPage() {
                               <HouseOutlined sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
                               <Typography variant="body2" sx={{ flexGrow: 1 }}>{h.numero}</Typography>
                               <Typography variant="body2" color="text.secondary">{h.descripcion}</Typography>
+                              <Typography variant="caption" sx={{ mx: 1 }}>{h.activo ? 'Activa' : 'Inactiva'}</Typography>
+                              <Button size="small" onClick={() => {
+                                setEditingHab(h.id);
+                                setHabForm({ numero: h.numero, descripcion: h.descripcion ?? '', pisoId: piso.id });
+                                setHabErrors({});
+                                setHabDialogOpen(true);
+                              }}>Editar habitación</Button>
+                              <Button size="small" disabled={changingEstado !== null} onClick={() => void cambiarEstado(h)}>
+                                {h.activo ? 'Desactivar' : 'Activar'}
+                              </Button>
                             </Box>
                           ))
                         )}
@@ -193,7 +235,9 @@ export function PisoPage() {
                         startIcon={<Add />}
                         sx={{ mt: 1 }}
                         onClick={() => {
-                          setHabForm({ ...habForm, pisoId: piso.id });
+                          setEditingHab(null);
+                          setHabErrors({});
+                          setHabForm({ numero: '', descripcion: '', pisoId: piso.id });
                           setHabDialogOpen(true);
                         }}
                       >
@@ -212,7 +256,7 @@ export function PisoPage() {
       )}
 
       <Dialog open={pisoDialogOpen} onClose={() => { setPisoDialogOpen(false); setPisoErrors({}); }} maxWidth="xs" fullWidth>
-        <DialogTitle>Registrar Piso</DialogTitle>
+        <DialogTitle>{editingPiso !== null ? 'Editar piso' : 'Registrar piso'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
@@ -247,7 +291,7 @@ export function PisoPage() {
       </Dialog>
 
       <Dialog open={habDialogOpen} onClose={() => { setHabDialogOpen(false); setHabErrors({}); }} maxWidth="sm" fullWidth>
-        <DialogTitle>Registrar Habitación</DialogTitle>
+        <DialogTitle>{editingHab !== null ? 'Editar habitación' : 'Registrar habitación'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField

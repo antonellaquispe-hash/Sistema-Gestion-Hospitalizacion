@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "pisos")
 public class Piso implements EntidadIdentificable {
 

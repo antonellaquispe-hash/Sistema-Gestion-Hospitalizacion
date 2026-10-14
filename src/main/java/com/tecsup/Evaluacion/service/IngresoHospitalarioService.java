@@ -69,7 +69,7 @@ public class IngresoHospitalarioService {
         Cama cama = camaRepository.findById(camaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cama no encontrada"));
 
-        if (!"DISPONIBLE".equalsIgnoreCase(cama.getEstado())) {
+        if (!cama.getHabitacion().isActivo() || !"DISPONIBLE".equalsIgnoreCase(cama.getEstado())) {
             throw new ReglaDeNegocioException("La cama seleccionada no se encuentra disponible");
         }
 
@@ -114,7 +114,7 @@ public class IngresoHospitalarioService {
             throw new ReglaDeNegocioException("La cama de destino debe ser diferente a la cama de origen");
         }
 
-        if (!"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
+        if (!camaDestino.getHabitacion().isActivo() || !"DISPONIBLE".equalsIgnoreCase(camaDestino.getEstado())) {
             throw new ReglaDeNegocioException("La cama de destino no se encuentra disponible");
         }
 

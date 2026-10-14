@@ -31,4 +31,9 @@ public class CamaController {
     public CamaResponse crear(@RequestBody Cama cama) {
         return service.crear(cama);
     }
+
+    @PutMapping("/{id}")
+    public CamaResponse editar(@PathVariable Long id, @RequestBody Cama cama) {
+        return service.editar(id, cama);
+    }
 }

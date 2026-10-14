@@ -6,6 +6,7 @@ export interface Piso {
 
 export interface Habitacion {
   id: number;
+  activo: boolean;
   numero: string;
   descripcion: string;
   piso: Piso | null;

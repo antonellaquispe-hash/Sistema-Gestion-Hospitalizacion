@@ -53,6 +53,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("mensaje", "Los datos entran en conflicto con los registros existentes o sus restricciones"));
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> manejarAccesoDenegado(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("mensaje", "No tienes permiso para esta operación"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> manejarErrorGlobal(Exception ex) {
         log.error("Error interno no controlado", ex);
