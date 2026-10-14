@@ -13,6 +13,9 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
 
     List<Habitacion> findByPiso(Piso piso);
 
+    @Query("SELECT h FROM Habitacion h JOIN FETCH h.piso")
+    List<Habitacion> listarConPiso();
+
     @Query("SELECT h FROM Habitacion h JOIN FETCH h.piso WHERE h.piso.id = :pisoId")
     List<Habitacion> findByPisoIdWithPiso(Long pisoId);
 }

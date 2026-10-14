@@ -6,6 +6,9 @@ export interface ApiErrorBody {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
+  withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -21,7 +24,13 @@ api.interceptors.response.use(
         ? 'El recurso solicitado no existe.'
         : status === 400
           ? 'Los datos enviados no son válidos.'
-          : 'No fue posible conectar con el servidor. Inténtalo de nuevo.');
+          : status === 401
+            ? 'Inicia sesión para continuar.'
+            : status === 403
+              ? 'No tienes permiso para realizar esta operación.'
+              : status === undefined
+                ? 'No fue posible conectar con el servidor. Inténtalo de nuevo.'
+                : 'Ocurrió un error interno en el servidor.');
     const normalized = new Error(mensaje) as Error & { status?: number };
     normalized.status = status;
     return Promise.reject(normalized);

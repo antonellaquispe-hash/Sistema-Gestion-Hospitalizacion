@@ -2,9 +2,11 @@ package com.tecsup.Evaluacion.service;
 
 import com.tecsup.Evaluacion.exception.RecursoNoEncontradoException;
 import com.tecsup.Evaluacion.exception.ReglaDeNegocioException;
+import com.tecsup.Evaluacion.audit.Auditable;
 import com.tecsup.Evaluacion.model.Paciente;
 import com.tecsup.Evaluacion.repository.PacienteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class PacienteService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado"));
     }
 
+    @Auditable(operacion = "REGISTRO", entidad = "Paciente")
+    @Transactional
     public Paciente crear(Paciente paciente) {
         if (paciente.getNombre() == null || paciente.getNombre().isBlank()) {
             throw new ReglaDeNegocioException("El nombre del paciente es obligatorio");

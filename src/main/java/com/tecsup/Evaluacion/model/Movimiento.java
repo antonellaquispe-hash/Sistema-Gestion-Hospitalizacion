@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "movimientos")
-public class Movimiento {
+public class Movimiento implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,15 +18,18 @@ public class Movimiento {
     private String observaciones;
 
     @ManyToOne
-    @JoinColumn(name = "ingreso_id")
+    @JoinColumn(name = "ingreso_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_movimientos_ingreso"))
     private IngresoHospitalario ingreso;
 
     @ManyToOne
-    @JoinColumn(name = "cama_origen_id")
+    @JoinColumn(name = "cama_origen_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_movimientos_cama_origen"))
     private Cama camaOrigen;
 
     @ManyToOne
-    @JoinColumn(name = "cama_destino_id")
+    @JoinColumn(name = "cama_destino_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_movimientos_cama_destino"))
     private Cama camaDestino;
 
     public Movimiento() {}

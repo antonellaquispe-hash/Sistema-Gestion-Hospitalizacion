@@ -31,6 +31,7 @@ import { EmptyState } from '../components/EmptyState';
 import { ErrorState } from '../components/ErrorState';
 import { EstadoIngresoBadge } from '../components/EstadoIngresoBadge';
 import { formatDateTime } from '../utils/format';
+import { useAuth } from '../auth/AuthProvider';
 
 interface PacienteForm {
   nombre: string;
@@ -66,7 +67,13 @@ export function PacientesPage() {
   const [detalle, setDetalle] = useState<Paciente | null>(null);
 
   const { data, loading, error, refetch } = useApi(() => pacientesApi.listar(), []);
-  const ingresos = useApi(() => ingresosApi.listar(), []);
+  const { user } = useAuth();
+  const ingresos = useApi(
+    () => user?.rol === 'ADMINISTRADOR' || user?.rol === 'MÉDICO'
+      ? ingresosApi.listar()
+      : Promise.resolve([] as IngresoHospitalario[]),
+    [],
+  );
   const { showToast } = useToast();
 
   const filtered = useMemo(() => {

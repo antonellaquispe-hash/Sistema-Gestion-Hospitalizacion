@@ -21,13 +21,13 @@ public class MovimientoService {
     }
 
     public List<Movimiento> listar() {
-        return movimientoRepository.findAll();
+        return movimientoRepository.listarConTodo();
     }
 
     public List<Movimiento> listarPorIngreso(Long ingresoId) {
         if (!ingresoRepository.existsById(ingresoId)) {
             throw new RecursoNoEncontradoException("Ingreso hospitalario no encontrado");
         }
-        return movimientoRepository.findByIngresoId(ingresoId);
+        return movimientoRepository.findByIngresoIdConTodo(ingresoId);
     }
 }

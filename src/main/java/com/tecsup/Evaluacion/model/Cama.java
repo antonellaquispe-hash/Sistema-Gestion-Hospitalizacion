@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "camas")
-public class Cama {
+public class Cama implements EntidadIdentificable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,8 @@ public class Cama {
     private String estado; // "DISPONIBLE", "OCUPADA"
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "habitacion_id", nullable = false)
+    @JoinColumn(name = "habitacion_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_camas_habitacion"))
     @JsonIgnoreProperties({"camas"})
     private Habitacion habitacion;
 

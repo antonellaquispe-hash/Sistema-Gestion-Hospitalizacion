@@ -40,4 +40,10 @@ public class SolicitudHospitalizacionController {
 
         return ResponseEntity.ok(service.cambiarEstado(id, estado));
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void eliminarPendiente(@PathVariable Long id) {
+        service.eliminarPendiente(id);
+    }
 }
