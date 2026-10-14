@@ -1,0 +1,11 @@
+# Configuración local de desarrollo - PLANTILLA
+# Copia este archivo a application-local.properties y ajusta las credenciales
+# NO subas application-local.properties al repositorio (está en .gitignore)
+
+spring.datasource.url=jdbc:mysql://localhost:3306/gestion_hospitalizacion
+spring.datasource.username=root
+spring.datasource.password=
+
+# En desarrollo usamos 'update' para que Hibernate actualice el esquema automáticamente
+# En producción (application.properties) debe ser 'validate'
+spring.jpa.hibernate.ddl-auto=update

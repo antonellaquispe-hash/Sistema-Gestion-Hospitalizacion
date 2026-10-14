@@ -1,161 +1,214 @@
 # Sistema-Gestion-Hospitalizacion
 
-Sistema de gestión de hospitalización: camas, habitaciones, pisos,
-pacientes, ingresos hospitalarios, traslados y solicitudes.
-Backend Spring Boot + Hibernate/JPA, frontend React/Vite, MySQL.
+Sistema de Gestión de Hospitalización - Evaluación 02 (Desarrollo de Aplicaciones Web)
 
-## Requisitos
+## 📋 Requisitos previos
 
-- JDK 21 (obligatorio, el proyecto usa `java.version=21`)
-- Apache Maven (o usar el wrapper incluido `mvnw.cmd`)
-- Node.js 18+ y npm
-- MySQL 8 en local (puerto 3306)
-- SQLyog para administrar la base de datos
+| Herramienta | Versión | Notas |
+|-------------|---------|-------|
+| **JDK** | **21** (Oracle JDK, OpenJDK, Temurin, etc.) | Configurar `JAVA_HOME` |
+| **Maven** | 3.9+ | Incluido wrapper (`mvnw`) |
+| **Node.js** | 20+ LTS | Para frontend React/Vite |
+| **npm** | 10+ | Incluido con Node.js |
+| **MySQL** | 8.0+ | Administrado con SQLyog |
+| **SQLyog** | 13+ | GUI para MySQL (opcional, puede usar CLI) |
 
-## Configurar JAVA_HOME (Windows)
-
-El wrapper de Maven usa el JDK que indique `JAVA_HOME`.
-Debe apuntar a un JDK 21:
+### Configurar `JAVA_HOME` (Windows PowerShell)
 
 ```powershell
-[System.Environment]::GetEnvironmentVariable("JAVA_HOME", "Machine")
+# Ejemplo para Eclipse Temurin 21 instalado en C:\Program Files\Eclipse Adoptium\jdk-21.x.x.x-hotspot
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Eclipse Adoptium\jdk-21.x.x.x-hotspot", "User")
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.x.x.x-hotspot"
+$env:Path += ";$env:JAVA_HOME\bin"
 ```
 
-Si no apunta a JDK 21, configúralo (ajusta la ruta a tu instalación):
-
-```powershell
-setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot" /M
-```
-
-Cierra y reabre la terminal, luego verifica:
-
+Verificar:
 ```powershell
 java -version
-.\mvnw.cmd -version
+# Debe mostrar: openjdk version "21.x.x" ...
 ```
 
-## Levantar la BD local
+---
 
-1. En SQLyog conéctate a tu MySQL local.
-2. Ejecuta el script `schema.sql` de la raíz del repo
-   (crea la base `gestion_hospitalizacion` y las 10 tablas del sistema).
-3. Configura tus credenciales reales en
-   `src/main/resources/application-local.properties`
-   (ese archivo NO se commitea). Ejemplo:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/gestion_hospitalizacion
-   spring.datasource.username=root
-   spring.datasource.password=TU_CLAVE
-   spring.jpa.hibernate.ddl-auto=update
-   ```
-4. Arranca el backend con el perfil local:
-   ```powershell
-   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
-   ```
+## 🗄️ Configuración de Base de Datos (MySQL + SQLyog)
 
-Sin perfil `local`, la app usa variables de entorno con valores
-por defecto (ver `src/main/resources/application.properties`):
+### 1. Crear la base de datos
 
-| Variable       | Defecto                                              |
-|----------------|------------------------------------------------------|
-| `SERVER_PORT`  | `8081`                                               |
-| `DB_URL`       | `jdbc:mysql://localhost:3306/gestion_hospitalizacion`|
-| `DB_USER`      | `root`                                               |
-| `DB_PASSWORD`  | (vacío)                                              |
-| `CORS_ORIGINS` | `http://localhost:5173`                              |
+**Opción A: Desde SQLyog**
+1. Abre SQLyog y conecta a tu servidor MySQL local
+2. Ejecuta el script `schema.sql` de la raíz del repo (botón "Execute" o F9)
 
-## Backend
-
-```powershell
-.\mvnw.cmd clean install -DskipTests
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+**Opción B: Desde línea de comandos**
+```bash
+mysql -u root -p < schema.sql
 ```
 
-La API queda en `http://localhost:8081/api`
-(puerto configurable con `SERVER_PORT`).
+El script crea:
+- Base de datos `gestion_hospitalizacion`
+- Tablas: `pisos`, `habitaciones`, `camas`, `pacientes`, `solicitudes_hospitalizacion`, `ingresos_hospitalarios`, `movimientos`
+- Tablas de Evaluación 02: `usuarios`, `roles`, `usuario_roles`, `auditoria`
+- Roles precargados: `ADMINISTRADOR`, `MEDICO`, `RECEPCIONISTA`
+- Índices y constraints de integridad
 
-### Usuarios y roles
+### 2. Configurar credenciales locales
 
-Al iniciar, la aplicación crea los roles `ADMINISTRADOR`, `MÉDICO` y
-`RECEPCIONISTA` si aún no existen. Para el primer inicio de sesión, define
-`BOOTSTRAP_ADMIN_USER` y `BOOTSTRAP_ADMIN_PASSWORD` como variables de entorno;
-si la tabla de usuarios está vacía, la aplicación creará esa cuenta con rol
-administrador. La contraseña debe tener entre 8 y 72 caracteres. Si ya existe
-un usuario, esas variables no modifican su cuenta.
+Copia el archivo de plantilla y ajusta tus credenciales:
 
-En PowerShell, inicia el backend en la misma terminal en la que defines las
-variables. La contraseña se solicita sin mostrarla y no se escribe en archivos:
-
-```powershell
-$env:BOOTSTRAP_ADMIN_USER = Read-Host "Usuario administrador inicial"
-$securePassword = Read-Host "Contraseña inicial (8-72 caracteres)" -AsSecureString
-$passwordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
-try {
-  $env:BOOTSTRAP_ADMIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPointer)
-} finally {
-  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPointer)
-}
-$env:SPRING_PROFILES_ACTIVE = "local"
-.\mvnw.cmd spring-boot:run
+```bash
+# El archivo application-local.properties está en .gitignore (NO se sube al repo)
+cp src/main/resources/application-local.properties.example src/main/resources/application-local.properties
 ```
 
-Si detienes el servidor, vuelve a definir las variables antes de iniciarlo. No
-compartas ni guardes la contraseña en archivos versionados.
+Edita `src/main/resources/application-local.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/gestion_hospitalizacion
+spring.datasource.username=root
+spring.datasource.password=tu_password_aqui
 
-El login REST es `POST /api/auth/login`; primero solicita un token CSRF con
-`GET /api/auth/csrf`. La sesión se conserva en una cookie HTTP y las escrituras
-requieren el token CSRF. `GET /api/auth/me` devuelve el usuario y la ruta inicial
-según su rol; `POST /api/auth/logout` cierra la sesión. Las operaciones de
-usuarios y roles bajo `/api/usuarios` y `/api/roles` requieren administrador.
-Las contraseñas se almacenan con BCrypt y nunca se incluyen en las respuestas.
-La bitácora de las operaciones exitosas de registro, modificación y eliminación
-se consulta en `GET /api/auditorias` (solo administrador; muestra hasta 500
-eventos recientes). Solo se permite eliminar solicitudes que sigan pendientes;
-las solicitudes con una decisión conservan su historial.
+# En desarrollo usamos 'update' para que Hibernate actualice el esquema automáticamente
+spring.jpa.hibernate.ddl-auto=update
+```
 
-En el frontend, inicia sesión en `/login`. El administrador puede gestionar
-usuarios y roles; médicos acceden a pacientes e ingresos hospitalarios; y
-recepcionistas a pacientes y solicitudes. La interfaz filtra las opciones por
-rol y Spring Security vuelve a validar cada permiso en el backend.
+> **Nota:** El archivo `application.properties` principal usa `ddl-auto=validate` (seguro para producción). El profile `local` sobrescribe a `update` solo en desarrollo.
 
-## Checklist de evidencias de la Evaluación 02
+### 3. Variables de entorno (alternativa a application-local.properties)
 
-- [ ] **P1 — Relaciones JPA:** mostrar `Paciente.ingresos`,
-  `IngresoHospitalario.paciente`, `IngresoHospitalario.movimientos`, y las
-  relaciones Piso–Habitación–Cama; verificar sus claves foráneas en SQLyog.
-- [ ] **P3 — Usuarios y roles:** mostrar `Usuario`, `Rol`, la FK
-  `usuarios.rol_id`, los tres roles iniciales, la gestión web y una contraseña
-  guardada como hash BCrypt (nunca revelar la contraseña de texto).
-- [ ] **P5 — Seguridad:** capturar el inicio de sesión, la ruta inicial por rol,
-  el menú filtrado y una respuesta `401`/`403` al intentar una petición no
-  autenticada o no permitida.
-- [ ] **P2 — Auditoría:** mostrar `auditorias` en SQLyog después de una operación
-  autenticada exitosa y la respuesta de `GET /api/auditorias` como
-  administrador. Cada fila incluye usuario, fecha/hora, operación, entidad e ID.
-- [ ] **P4 — Frontend:** capturar login; listado, registro, edición y estado de
-  usuarios; listado, registro, edición y estado de roles; y los menús de
-  administrador, médico y recepcionista.
-
-Las capturas sugeridas son: **1)** login; **2)** usuarios y formulario de
-registro/edición; **3)** roles y formulario de registro/edición; **4)** menú de
-administrador; **5)** menú y pacientes del médico; **6)** menú y solicitudes de
-recepción; **7)** usuario y su FK al rol en SQLyog; **8)** tabla `auditorias` con
-eventos generados y respuesta de su endpoint; **9)** respuesta de acceso no
-autorizado. Registra los eventos después de iniciar sesión; las peticiones
-rechazadas no se guardan como operaciones del dominio.
-
-## Frontend
+Puedes sobrescribir la configuración sin tocar archivos:
 
 ```powershell
+$env:DB_URL = "jdbc:mysql://localhost:3306/gestion_hospitalizacion"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = "tu_password"
+$env:SERVER_PORT = "8081"
+$env:CORS_ALLOWED_ORIGINS = "http://localhost:5173"
+```
+
+---
+
+## 🚀 Levantar el proyecto
+
+### Backend (Spring Boot)
+
+```bash
+# Desde la raíz del proyecto
+./mvnw clean spring-boot:run
+# O en Windows PowerShell:
+.\mvnw.cmd clean spring-boot:run
+```
+
+- Puerto por defecto: **8081** (configurable con `SERVER_PORT`)
+- API base: `http://localhost:8081/api`
+- Health check: `http://localhost:8081/actuator/health` (si se agrega actuator)
+
+### Perfil de desarrollo (local)
+
+Para activar `application-local.properties`:
+```bash
+./mvnw spring-boot:run -Dspring.profiles.active=local
+```
+
+### Frontend (React + Vite)
+
+```bash
 cd frontend
 npm install
-npm run build
 npm run dev
 ```
 
-El frontend queda en `http://localhost:5173`.
-En desarrollo usa el proxy de `vite.config.ts` hacia el backend.
-Para apuntar a otro backend:
-```powershell
-$env:VITE_PROXY_TARGET="http://localhost:8081"; npm run dev
+- Puerto por defecto: **5173**
+- Proxy configurado a `http://localhost:8081/api` (ver `vite.config.ts`)
+- Abre `http://localhost:5173` en el navegador
+
+---
+
+## 📦 Estructura del proyecto
+
 ```
+Sistema-Gestion-Hospitalizacion/
+├── src/main/java/com/tecsup/Evaluacion/
+│   ├── config/           # WebConfig (CORS), SecurityConfig, PasswordConfig, RoleInitializer
+│   ├── controller/       # REST Controllers
+│   ├── exception/        # Excepciones personalizadas + GlobalExceptionHandler
+│   ├── model/            # Entidades JPA
+│   ├── repository/       # Spring Data JPA Repositories
+│   └── service/          # Lógica de negocio
+├── src/main/resources/
+│   ├── application.properties        # Config base (validate, vars de entorno)
+│   ├── application-local.properties  # Config local (update, credenciales reales) - .gitignore
+│   └── schema.sql                    # Script SQL para SQLyog/MySQL
+├── frontend/
+│   ├── src/
+│   │   ├── api/          # Clientes Axios por módulo
+│   │   ├── components/   # Componentes UI reutilizables (MUI)
+│   │   ├── hooks/        # Custom hooks (useApi, useToast)
+│   │   ├── layouts/      # Layouts de página
+│   │   ├── pages/        # Páginas principales
+│   │   ├── routes/       # Configuración de rutas (React Router)
+│   │   ├── types/        # Interfaces TypeScript
+│   │   └── utils/        # Utilidades (formato de fechas, etc.)
+│   ├── package.json
+│   └── vite.config.ts
+├── pom.xml
+├── mvnw / mvnw.cmd
+├── schema.sql
+└── README.md
+```
+
+---
+
+## 🔧 Endpoints principales (API REST)
+
+| Módulo | Endpoints |
+|--------|-----------|
+| **Auth** | `GET /api/auth/csrf` · `POST /api/auth/login` · `GET /api/auth/me` · `POST /api/auth/logout` |
+| **Pacientes** | `GET/POST /api/pacientes` · `GET /api/pacientes/{id}` |
+| **Pisos** | `GET/POST /api/pisos` |
+| **Habitaciones** | `GET/POST /api/habitaciones` · `GET /api/habitaciones/por-piso/{pisoId}` |
+| **Camas** | `GET/POST /api/camas` · `GET /api/camas/disponibles` |
+| **Solicitudes** | `GET/POST /api/solicitudes` · `PUT /api/solicitudes/{id}/estado` |
+| **Ingresos** | `GET/POST /api/ingresos` · `GET /api/ingresos/{id}` · `PUT /api/ingresos/{id}/finalizar` · `PUT /api/ingresos/{ingresoId}/asignar-cama/{camaId}` · `PUT /api/ingresos/{ingresoId}/trasladar/{camaDestinoId}` |
+| **Movimientos** | `GET /api/movimientos` · `GET /api/ingresos/{ingresoId}/movimientos` |
+| **Usuarios** | `GET/POST/PUT/DELETE /api/usuarios` (ADMIN) |
+| **Roles** | `GET/POST/PUT/DELETE /api/roles` (ADMIN) |
+| **Auditoría** | `GET /api/auditorias` (ADMIN) |
+
+---
+
+## 🔐 Roles y permisos
+
+| Rol | Permisos |
+|-----|----------|
+| **ADMINISTRADOR** | Usuarios, Roles, Auditoría, Pacientes, Ingresos, Solicitudes, Camas, Habitaciones, Pisos |
+| **MÉDICO** | Pacientes, Ingresos, Movimientos |
+| **RECEPCIONISTA** | Pacientes, Solicitudes |
+
+La autenticación usa **Spring Security + BCrypt + Sesión (Cookie) + CSRF**. El login es `POST /api/auth/login` precedido de `GET /api/auth/csrf`.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+./mvnw test
+
+# Frontend lint + type-check + build
+cd frontend
+npm run build   # incluye tsc --noEmit + vite build
+```
+
+---
+
+## 📝 Notas de desarrollo
+
+- **Java 21**: El proyecto usa `maven.compiler.release=21` (requiere JDK 21+)
+- **Spring Boot 3.3.3**: Compatible con Java 21
+- **ddl-auto**: `validate` en `application.properties` (producción), `update` en `application-local.properties` (desarrollo)
+- **CORS**: Configurable vía `CORS_ALLOWED_ORIGINS` (por defecto `http://localhost:5173`)
+- **Puerto**: Configurable vía `SERVER_PORT` (por defecto `8081`)
+
+---
+
+## 👥 Equipo
+
+Evaluación 02 - Desarrollo de Aplicaciones Web - Equipo de 4 personas

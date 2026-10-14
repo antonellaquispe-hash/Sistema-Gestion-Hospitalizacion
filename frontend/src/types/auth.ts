@@ -3,7 +3,7 @@ export type RolNombre = 'ADMINISTRADOR' | 'MÉDICO' | 'RECEPCIONISTA';
 export interface Sesion {
   nombreUsuario: string;
   nombreCompleto: string;
-  rol: RolNombre;
+  rol: string;
   rutaInicial: string;
 }
 
@@ -33,4 +33,17 @@ export interface EditarUsuarioInput {
   nombreCompleto: string;
   contrasena?: string;
   rolId: number;
+}
+
+export interface RolInput {
+  nombre: string;
+}
+
+export interface Auditoria {
+  id: number;
+  usuario: string;
+  fechaHora: string;
+  operacion: string;
+  entidadAfectada: string;
+  identificadorRegistro: string;
 }
