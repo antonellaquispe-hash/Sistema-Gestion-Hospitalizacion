@@ -37,6 +37,9 @@ public class IngresoHospitalarioService {
     @Auditable(operacion = "REGISTRO", entidad = "IngresoHospitalario")
     @Transactional
     public IngresoHospitalario registrarIngreso(Long pacienteId, String motivo) {
+        if (motivo == null || motivo.isBlank() || motivo.length() > 500) {
+            throw new ReglaDeNegocioException("El motivo es obligatorio y debe tener como máximo 500 caracteres");
+        }
         Paciente paciente = pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado"));
 
@@ -55,6 +58,13 @@ public class IngresoHospitalarioService {
     public IngresoHospitalario asignarCama(Long ingresoId, Long camaId) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
+
+        if (!"ACTIVO".equalsIgnoreCase(ingreso.getEstado())) {
+            throw new ReglaDeNegocioException("Solo se puede asignar una cama a un ingreso activo");
+        }
+        if (ingreso.getCama() != null) {
+            throw new ReglaDeNegocioException("El ingreso ya tiene cama; utilice el traslado");
+        }
 
         Cama cama = camaRepository.findById(camaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cama no encontrada"));
@@ -81,6 +91,16 @@ public class IngresoHospitalarioService {
                                         String usuarioTraslado, String observaciones) {
         IngresoHospitalario ingreso = ingresoRepository.findById(ingresoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
+
+        if (!"ACTIVO".equalsIgnoreCase(ingreso.getEstado())) {
+            throw new ReglaDeNegocioException("Solo se pueden trasladar ingresos activos");
+        }
+        if (motivo == null || motivo.isBlank() || motivo.length() > 500
+                || medicoResponsable == null || medicoResponsable.isBlank() || medicoResponsable.length() > 150
+                || usuarioTraslado == null || usuarioTraslado.isBlank() || usuarioTraslado.length() > 100
+                || (observaciones != null && observaciones.length() > 1000)) {
+            throw new ReglaDeNegocioException("Los datos del traslado son obligatorios o exceden la longitud permitida");
+        }
 
         Cama camaOrigen = ingreso.getCama();
         if (camaOrigen == null) {

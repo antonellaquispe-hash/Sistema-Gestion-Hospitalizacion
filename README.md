@@ -46,8 +46,8 @@ mysql -u root -p < schema.sql
 El script crea:
 - Base de datos `gestion_hospitalizacion`
 - Tablas: `pisos`, `habitaciones`, `camas`, `pacientes`, `solicitudes_hospitalizacion`, `ingresos_hospitalarios`, `movimientos`
-- Tablas de Evaluación 02: `usuarios`, `roles`, `usuario_roles`, `auditoria`
-- Roles precargados: `ADMINISTRADOR`, `MEDICO`, `RECEPCIONISTA`
+- Tablas de Evaluación 02: `usuarios`, `roles`, `auditorias`. Cada usuario tiene un rol mediante `usuarios.rol_id`.
+- Roles precargados: `ADMINISTRADOR`, `MÉDICO`, `RECEPCIONISTA`
 - Índices y constraints de integridad
 
 ### 2. Configurar credenciales locales
@@ -98,20 +98,31 @@ $env:CORS_ALLOWED_ORIGINS = "http://localhost:5173"
 
 - Puerto por defecto: **8081** (configurable con `SERVER_PORT`)
 - API base: `http://localhost:8081/api`
-- Health check: `http://localhost:8081/actuator/health` (si se agrega actuator)
+- Comprobación pública de la API: `GET http://localhost:8081/api/auth/csrf` (Actuator no está instalado).
 
 ### Perfil de desarrollo (local)
 
 Para activar `application-local.properties`:
 ```bash
-./mvnw spring-boot:run -Dspring.profiles.active=local
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+### Primer administrador
+
+Si `usuarios` está vacía, configura `BOOTSTRAP_ADMIN_USER` y
+`BOOTSTRAP_ADMIN_PASSWORD` antes de arrancar el backend. La contraseña debe tener
+entre 8 y 72 caracteres. El inicializador crea el administrador con BCrypt;
+no existen credenciales predeterminadas. Retira estas variables después del primer arranque.
+
+En macOS/Linux puedes definirlas con `export NOMBRE_VARIABLE=valor`; en PowerShell
+con `$env:NOMBRE_VARIABLE = "valor"`. MySQL debe estar iniciado y `schema.sql`
+ejecutado antes de arrancar o ejecutar la prueba de contexto.
 
 ### Frontend (React + Vite)
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -135,7 +146,7 @@ Sistema-Gestion-Hospitalizacion/
 ├── src/main/resources/
 │   ├── application.properties        # Config base (validate, vars de entorno)
 │   ├── application-local.properties  # Config local (update, credenciales reales) - .gitignore
-│   └── schema.sql                    # Script SQL para SQLyog/MySQL
+│   └── application-local.properties.example # Plantilla de configuración local
 ├── frontend/
 │   ├── src/
 │   │   ├── api/          # Clientes Axios por módulo
@@ -168,8 +179,8 @@ Sistema-Gestion-Hospitalizacion/
 | **Solicitudes** | `GET/POST /api/solicitudes` · `PUT /api/solicitudes/{id}/estado` |
 | **Ingresos** | `GET/POST /api/ingresos` · `GET /api/ingresos/{id}` · `PUT /api/ingresos/{id}/finalizar` · `PUT /api/ingresos/{ingresoId}/asignar-cama/{camaId}` · `PUT /api/ingresos/{ingresoId}/trasladar/{camaDestinoId}` |
 | **Movimientos** | `GET /api/movimientos` · `GET /api/ingresos/{ingresoId}/movimientos` |
-| **Usuarios** | `GET/POST/PUT/DELETE /api/usuarios` (ADMIN) |
-| **Roles** | `GET/POST/PUT/DELETE /api/roles` (ADMIN) |
+| **Usuarios** | `GET/POST /api/usuarios` · `PUT /api/usuarios/{id}` · `PATCH /api/usuarios/{id}/estado` (ADMINISTRADOR) |
+| **Roles** | `GET/POST /api/roles` · `PUT /api/roles/{id}` · `PATCH /api/roles/{id}/estado` (ADMINISTRADOR) |
 | **Auditoría** | `GET /api/auditorias` (ADMIN) |
 
 ---
@@ -179,7 +190,7 @@ Sistema-Gestion-Hospitalizacion/
 | Rol | Permisos |
 |-----|----------|
 | **ADMINISTRADOR** | Usuarios, Roles, Auditoría, Pacientes, Ingresos, Solicitudes, Camas, Habitaciones, Pisos |
-| **MÉDICO** | Pacientes, Ingresos, Movimientos |
+| **MÉDICO** | Pacientes, Ingresos, Movimientos y consulta de camas disponibles |
 | **RECEPCIONISTA** | Pacientes, Solicitudes |
 
 La autenticación usa **Spring Security + BCrypt + Sesión (Cookie) + CSRF**. El login es `POST /api/auth/login` precedido de `GET /api/auth/csrf`.
@@ -189,10 +200,10 @@ La autenticación usa **Spring Security + BCrypt + Sesión (Cookie) + CSRF**. El
 ## 🧪 Testing
 
 ```bash
-# Backend tests
+# Backend tests (requieren MySQL y el esquema configurado)
 ./mvnw test
 
-# Frontend lint + type-check + build
+# Frontend type-check + build (lint ejecuta únicamente TypeScript)
 cd frontend
 npm run build   # incluye tsc --noEmit + vite build
 ```
@@ -229,15 +240,15 @@ npm run build   # incluye tsc --noEmit + vite build
 3. **Corrección de tipos TypeScript**  
    - `frontend/src/types/auth.ts`: `rol: string` → `rol: RolNombre`. Arreglaba 2 errores `TS2345` que bloqueaban `npm run build`.
 
-### Errores que aún faltan arreglar
+### Correcciones de revisión local
 
-1. **README afirma `DELETE /api/usuarios` que no existe**  
-   - El controlador `UsuarioController` solo tiene GET, POST, PUT, PATCH (no DELETE).  
-   - El endpoint `PATCH /{id}/estado` es el correcto para cambiar el estado de un usuario.
-
-2. **Instrucción incorrecta del perfil en README**  
-   - El README indica `./mvnw spring-boot:run -Dspring.profiles.active=local`, pero ese flag **no alcanza la JVM forked** del plugin `spring-boot:run`.  
-   - La forma correcta es: `./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"` (como ya está documentado en los "Decisiones" del historial).
+- Corregidos los endpoints de usuarios/roles y el flag del perfil local.
+- Wrapper ejecutable en macOS/Linux; CORS admite `PATCH` y la variable alternativa `CORS_ORIGINS`.
+- El médico puede consultar camas disponibles para asignar y trasladar.
+- Se rechazan asignaciones duplicadas y asignaciones/traslados de ingresos finalizados.
+- Se valida la longitud de los datos de ingresos y traslados; solicitudes mal formadas responden 400 y conflictos de integridad 409.
+- Se renueva el identificador de sesión al autenticar una sesión existente.
+- El selector de camas se refresca al asignar y el detalle refleja el ingreso actualizado tras un traslado.
 
 ---
 ## 👥 Equipo

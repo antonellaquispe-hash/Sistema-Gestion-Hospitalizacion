@@ -4,6 +4,7 @@ import com.tecsup.Evaluacion.repository.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -68,6 +69,8 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRADOR", "MÉDICO")
                         .requestMatchers("/api/solicitudes/**")
                         .hasAnyRole("ADMINISTRADOR", "RECEPCIONISTA")
+                        .requestMatchers(HttpMethod.GET, "/api/camas/disponibles")
+                        .hasAnyRole("ADMINISTRADOR", "MÉDICO")
                         .requestMatchers("/api/camas/**", "/api/habitaciones/**", "/api/pisos/**")
                         .hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/**").authenticated()

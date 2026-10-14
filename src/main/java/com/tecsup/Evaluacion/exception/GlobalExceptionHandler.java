@@ -40,6 +40,19 @@ public class GlobalExceptionHandler {
                 .body(Map.of("mensaje", mensaje));
     }
 
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
+    public ResponseEntity<Map<String, String>> manejarSolicitudInvalida(Exception ex) {
+        return ResponseEntity.badRequest().body(Map.of("mensaje", "Formato o parámetros de solicitud inválidos"));
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> manejarConflicto(Exception ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("mensaje", "Los datos entran en conflicto con los registros existentes o sus restricciones"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> manejarErrorGlobal(Exception ex) {
         log.error("Error interno no controlado", ex);

@@ -134,17 +134,6 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
--- TABLA: usuario_roles (relación ManyToMany)
--- =====================================================================
-CREATE TABLE IF NOT EXISTS `usuario_roles` (
-  `usuario_id` BIGINT NOT NULL,
-  `rol_id` BIGINT NOT NULL,
-  PRIMARY KEY (`usuario_id`, `rol_id`),
-  CONSTRAINT `fk_usuario_rol_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_usuario_rol_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =====================================================================
 -- TABLA: auditorias (para Evaluación 02 - P2)
 -- Alineada con la entidad Auditoria (model/Auditoria.java)
 -- =====================================================================

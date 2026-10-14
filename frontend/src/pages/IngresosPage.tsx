@@ -195,7 +195,7 @@ export function IngresosPage() {
       setTrasladar(null);
       setTrasladarConfirm(false);
       void refetch();
-      if (detalle?.id === trasladar.id) abrirDetalle(trasladar);
+      if (detalle?.id === trasladar.id) abrirDetalle(movimiento.ingreso);
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'No se pudo realizar el traslado.', 'error');
     } finally {
@@ -230,7 +230,10 @@ export function IngresosPage() {
         </Tooltip>
         {activo && !i.cama && (
           <Tooltip title="Asignar cama">
-            <IconButton size="small" color="primary" onClick={() => setAsignar({ ingreso: i, cama: null })}>
+            <IconButton size="small" color="primary" onClick={() => {
+              void camasDisponibles.refetch();
+              setAsignar({ ingreso: i, cama: null });
+            }}>
               <BedOutlined />
             </IconButton>
           </Tooltip>
@@ -542,6 +545,7 @@ export function IngresosPage() {
                         variant="contained"
                         startIcon={<BedOutlined />}
                         onClick={() => {
+                          void camasDisponibles.refetch();
                           setAsignar({ ingreso: detalle, cama: null });
                           setDetalle(null);
                         }}
