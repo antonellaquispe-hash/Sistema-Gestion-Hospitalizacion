@@ -20,7 +20,9 @@ import {
   HouseOutlined,
 } from '@mui/icons-material';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../auth/AuthProvider';
 import { useToast } from '../components/ToastProvider';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorState } from '../components/ErrorState';
@@ -29,6 +31,10 @@ import { habitacionesApi, pisosApi } from '../api/camas';
 
 export function PisoPage() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMINISTRADOR';
+  const [pisoToDelete, setPisoToDelete] = useState<number | null>(null);
+  const [deletingPiso, setDeletingPiso] = useState(false);
 
   const { data: pisos, loading, error, refetch } = useApi(() => pisosApi.listar(), []);
   const { data: habitaciones, error: habitacionesError, refetch: refetchHabs } = useApi(() => habitacionesApi.listar(), []);
@@ -115,6 +121,21 @@ export function PisoPage() {
     }
   };
 
+  const handleEliminarPiso = async (id: number) => {
+    setDeletingPiso(true);
+    try {
+      await pisosApi.eliminar(id);
+      showToast('Piso eliminado correctamente.', 'success');
+      setPisoToDelete(null);
+      void refetch();
+      void refetchHabs();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'No se pudo eliminar el piso.', 'error');
+    } finally {
+      setDeletingPiso(false);
+    }
+  };
+
   const pisoMap = useMemo(() => {
     const map = new Map<number, Habitacion[]>();
     for (const h of habitaciones ?? []) {
@@ -194,6 +215,18 @@ export function PisoPage() {
                       setPisoErrors({});
                       setPisoDialogOpen(true);
                     }}>Editar piso</Button>
+                    {isAdmin && (
+                      <Button
+                        color="error"
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setPisoToDelete(piso.id);
+                        }}
+                      >
+                        Eliminar piso
+                      </Button>
+                    )}
                     <ExpandMore
                       sx={{
                         transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
@@ -289,6 +322,17 @@ export function PisoPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={pisoToDelete !== null}
+        title="Eliminar piso"
+        description="¿Seguro que deseas eliminar este piso? Se eliminarán también sus habitaciones y camas no ocupadas."
+        confirmLabel="Eliminar"
+        tone="error"
+        loading={deletingPiso}
+        onConfirm={() => pisoToDelete !== null && void handleEliminarPiso(pisoToDelete)}
+        onClose={() => setPisoToDelete(null)}
+      />
 
       <Dialog open={habDialogOpen} onClose={() => { setHabDialogOpen(false); setHabErrors({}); }} maxWidth="sm" fullWidth>
         <DialogTitle>{editingHab !== null ? 'Editar habitación' : 'Registrar habitación'}</DialogTitle>

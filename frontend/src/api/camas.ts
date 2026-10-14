@@ -6,6 +6,7 @@ export const camasApi = {
   listarDisponibles: () => api.get<Array<Cama>>('/camas/disponibles').then((r) => r.data),
   crear: (cama: Omit<Cama, 'id'>) => api.post<Cama>('/camas', cama).then((r) => r.data),
   editar: (id: number, cama: Omit<Cama, 'id'>) => api.put<Cama>(`/camas/${id}`, cama).then((r) => r.data),
+  eliminar: (id: number) => api.delete<void>(`/camas/${id}`).then((r) => r.data),
 };
 
 export const habitacionesApi = {
@@ -20,4 +21,5 @@ export const pisosApi = {
   listar: () => api.get<Array<Piso>>('/pisos').then((r) => r.data),
   crear: (piso: Omit<Piso, 'id'>) => api.post<Piso>('/pisos', piso).then((r) => r.data),
   editar: (id: number, piso: Omit<Piso, 'id'>) => api.put<Piso>(`/pisos/${id}`, piso).then((r) => r.data),
+  eliminar: (id: number) => api.delete<void>(`/pisos/${id}`).then((r) => r.data),
 };

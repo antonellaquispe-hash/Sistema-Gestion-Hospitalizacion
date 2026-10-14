@@ -17,6 +17,8 @@ import {
 import type { Cama, Habitacion, IngresoHospitalario } from '../types';
 import { camasApi, habitacionesApi } from '../api/camas';
 import { ingresosApi } from '../api/ingresos';
+import { useAuth } from '../auth/AuthProvider';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useApi } from '../hooks/useApi';
 import { useToast } from '../components/ToastProvider';
 import { PageHeader } from '../components/PageHeader';
@@ -39,6 +41,10 @@ export function CamasPage() {
   const ingresos = useApi(() => ingresosApi.listar(), []);
   const habitaciones = useApi(() => habitacionesApi.listar(), []);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMINISTRADOR';
+  const [camaToDelete, setCamaToDelete] = useState<number | null>(null);
+  const [deletingCama, setDeletingCama] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Cama | null>(null);
@@ -82,6 +88,20 @@ export function CamasPage() {
       showToast(e instanceof Error ? e.message : 'No se pudo registrar la cama.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEliminarCama = async (id: number) => {
+    setDeletingCama(true);
+    try {
+      await camasApi.eliminar(id);
+      showToast('Cama eliminada correctamente.', 'success');
+      setCamaToDelete(null);
+      void camas.refetch();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'No se pudo eliminar la cama.', 'error');
+    } finally {
+      setDeletingCama(false);
     }
   };
 
@@ -215,6 +235,11 @@ export function CamasPage() {
                       void habitaciones.refetch();
                       setDialogOpen(true);
                     }}>Editar cama</Button>
+                    {isAdmin && (
+                      <Button size="small" color="error" onClick={() => setCamaToDelete(cama.id)}>
+                        Eliminar cama
+                      </Button>
+                    )}
                     {cama.estado === 'OCUPADA' && <Typography variant="caption" display="block">Gestiona el traslado o alta desde Ingresos.</Typography>}
                   </Paper>
                 </Grid>
@@ -241,7 +266,11 @@ export function CamasPage() {
                 “Pisos y Habitaciones” para poder asignarle camas.
               </Typography>
             ) : (
-              <Select
+              <>
+                <Typography variant="caption" color="text.secondary">
+                  Habitación (incluye su piso)
+                </Typography>
+                <Select
                 value={habitacionId}
                 onChange={(e) => {
                   setHabitacionId(e.target.value as number);
@@ -264,11 +293,15 @@ export function CamasPage() {
                   </MenuItem>
                 ))}
               </Select>
+              </>
             )}
             {formError && (
               <Typography variant="body2" color="error">{formError}</Typography>
             )}
-            <Select value={estado} onChange={(e) => setEstado(e.target.value)} inputProps={{ 'aria-label': 'Estado de cama' }}>
+            <Typography variant="caption" color="text.secondary">
+              Estado de la cama (no es un piso)
+            </Typography>
+            <Select value={estado} onChange={(e) => setEstado(e.target.value)} fullWidth size="small" inputProps={{ 'aria-label': 'Estado de cama' }}>
               <MenuItem value="DISPONIBLE">Disponible</MenuItem>
               <MenuItem value="LIMPIEZA">Limpieza</MenuItem>
             </Select>
@@ -287,6 +320,17 @@ export function CamasPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={camaToDelete !== null}
+        title="Eliminar cama"
+        description="¿Seguro que deseas eliminar esta cama? No se puede eliminar si está ocupada."
+        confirmLabel="Eliminar"
+        tone="error"
+        loading={deletingCama}
+        onConfirm={() => camaToDelete !== null && void handleEliminarCama(camaToDelete)}
+        onClose={() => setCamaToDelete(null)}
+      />
     </Box>
   );
 }

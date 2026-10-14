@@ -3,6 +3,8 @@ package com.tecsup.Evaluacion.controller;
 import com.tecsup.Evaluacion.dto.CamaResponse;
 import com.tecsup.Evaluacion.model.Cama;
 import com.tecsup.Evaluacion.service.CamaService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,5 +37,12 @@ public class CamaController {
     @PutMapping("/{id}")
     public CamaResponse editar(@PathVariable Long id, @RequestBody Cama cama) {
         return service.editar(id, cama);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public void eliminar(@PathVariable Long id) {
+        service.eliminar(id);
     }
 }

@@ -53,6 +53,17 @@ public class CamaService {
         return CamaResponse.desde(repository.save(cama));
     }
 
+    @Auditable(operacion = "ELIMINACION", entidad = "Cama")
+    @Transactional
+    public void eliminar(Long id) {
+        Cama cama = repository.findById(id).orElseThrow(() ->
+                new RecursoNoEncontradoException("Cama no encontrada"));
+        if ("OCUPADA".equalsIgnoreCase(cama.getEstado())) {
+            throw new ReglaDeNegocioException("No se puede eliminar una cama ocupada; gestione el alta desde Ingresos");
+        }
+        repository.delete(cama);
+    }
+
     private void validar(Cama cama) {
         if (cama.getEstado() == null || cama.getEstado().isBlank()) {
             throw new ReglaDeNegocioException("El estado de la cama es obligatorio");
