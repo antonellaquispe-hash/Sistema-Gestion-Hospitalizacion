@@ -361,7 +361,11 @@ export function PisoPage() {
               displayEmpty
               fullWidth
               size="small"
-              renderValue={(v) => v ? `Piso #${v}` : 'Selecciona un piso'}
+              renderValue={(v) => {
+                if (!v) return 'Selecciona un piso';
+                const piso = (pisos ?? []).find((p) => p.id === v);
+                return piso ? piso.nombre : `Piso #${v}`;
+              }}
             >
               {(pisos ?? []).map((p) => (
                 <MenuItem key={p.id} value={p.id}>
