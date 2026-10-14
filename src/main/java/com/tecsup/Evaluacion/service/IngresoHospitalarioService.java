@@ -66,8 +66,11 @@ public class IngresoHospitalarioService {
         ingreso.setCama(cama);
         cama.setEstado("OCUPADA");
         camaRepository.save(cama);
+        ingresoRepository.save(ingreso);
 
-        return ingresoRepository.save(ingreso);
+        // Se reconsulta con fetch completo: evita que Jackson reciba proxies lazy
+        return ingresoRepository.buscarConTodoPorId(ingreso.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ingreso hospitalario no encontrado"));
     }
 
     // RF-HOSP-17: Trasladar paciente entre camas
@@ -116,7 +119,10 @@ public class IngresoHospitalarioService {
         movimiento.setUsuarioTraslado(usuarioTraslado);
         movimiento.setObservaciones(observaciones);
 
-        return movimientoRepository.save(movimiento);
+        Movimiento guardado = movimientoRepository.save(movimiento);
+        // Se reconsulta con fetch completo: evita que Jackson reciba proxies lazy
+        return movimientoRepository.buscarConTodoPorId(guardado.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Movimiento no encontrado"));
     }
 
     public List<IngresoHospitalario> listar() {

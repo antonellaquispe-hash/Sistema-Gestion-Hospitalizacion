@@ -1,5 +1,6 @@
 package com.tecsup.Evaluacion.audit;
 
+import com.tecsup.Evaluacion.dto.CamaResponse;
 import com.tecsup.Evaluacion.dto.RolResponse;
 import com.tecsup.Evaluacion.dto.UsuarioResponse;
 import com.tecsup.Evaluacion.model.EntidadIdentificable;
@@ -39,6 +40,9 @@ public class AuditoriaAspect {
         }
         if (resultado instanceof RolResponse rol) {
             return rol.id();
+        }
+        if (resultado instanceof CamaResponse cama) {
+            return cama.id();
         }
         for (Object argumento : argumentos) {
             if (argumento instanceof Long id) {

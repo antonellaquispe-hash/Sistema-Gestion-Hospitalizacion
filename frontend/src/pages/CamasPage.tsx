@@ -1,10 +1,24 @@
-import { useMemo } from 'react';
-import { Box, Chip, Grid, Paper, Typography } from '@mui/material';
-import { HotelOutlined, HomeOutlined, RoomOutlined } from '@mui/icons-material';
-import type { IngresoHospitalario } from '../types';
-import { camasApi } from '../api/camas';
+import { useMemo, useState } from 'react';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Typography,
+} from '@mui/material';import { HotelOutlined, HomeOutlined, RoomOutlined } from '@mui/icons-material';
+import type { Habitacion, IngresoHospitalario } from '../types';
+import { camasApi, habitacionesApi } from '../api/camas';
 import { ingresosApi } from '../api/ingresos';
 import { useApi } from '../hooks/useApi';
+import { useToast } from '../components/ToastProvider';
 import { PageHeader } from '../components/PageHeader';
 import { ErrorState } from '../components/ErrorState';
 
@@ -21,6 +35,46 @@ const ESTADO_LABEL: Record<string, string> = {
 export function CamasPage() {
   const camas = useApi(() => camasApi.listar(), []);
   const ingresos = useApi(() => ingresosApi.listar(), []);
+  const habitaciones = useApi(() => habitacionesApi.listar(), []);
+  const { showToast } = useToast();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [habitacionId, setHabitacionId] = useState<number | ''>('');
+  const [formError, setFormError] = useState<string | undefined>();
+  const [saving, setSaving] = useState(false);
+
+  const abrirDialogo = () => {
+    setHabitacionId('');
+    setFormError(undefined);
+    setDialogOpen(true);
+  };
+
+  const cerrarDialogo = () => {
+    setDialogOpen(false);
+    setFormError(undefined);
+  };
+
+  const handleCrearCama = async () => {
+    if (!habitacionId) {
+      setFormError('Selecciona una habitación.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await camasApi.crear({
+        id: 0,
+        estado: 'DISPONIBLE',
+        habitacion: { id: habitacionId } as Habitacion,
+      });
+      showToast('Cama registrada correctamente.', 'success');
+      cerrarDialogo();
+      void camas.refetch();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'No se pudo registrar la cama.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const ocupantes = useMemo(() => {
     const map = new Map<number, IngresoHospitalario>();
@@ -38,6 +92,8 @@ export function CamasPage() {
         title="Camas hospitalarias"
         subtitle="Vista general del estado de las camas del hospital."
         breadcrumb="Camas"
+        actionLabel="Registrar cama"
+        onAction={abrirDialogo}
         onRefresh={() => {
           void camas.refetch();
           void ingresos.refetch();
@@ -74,6 +130,9 @@ export function CamasPage() {
           <Typography variant="body2" color="text.secondary">
             Registra camas en el sistema para gestionar la hospitalización.
           </Typography>
+          <Button variant="contained" startIcon={<HotelOutlined />} sx={{ mt: 2 }} onClick={abrirDialogo}>
+            Registrar cama
+          </Button>
         </Paper>
       ) : (
         <Grid container spacing={2}>
@@ -152,6 +211,62 @@ export function CamasPage() {
           {disponibles !== 1 ? 's' : ''} para nuevos ingresos en este momento.
         </Typography>
       </Paper>
+
+      <Dialog open={dialogOpen} onClose={cerrarDialogo} maxWidth="xs" fullWidth>
+        <DialogTitle>Registrar Cama</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {(habitaciones.data ?? []).length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No hay habitaciones registradas. Primero crea una habitación en el módulo
+                “Pisos y Habitaciones” para poder asignarle camas.
+              </Typography>
+            ) : (
+              <Select
+                value={habitacionId}
+                onChange={(e) => {
+                  setHabitacionId(e.target.value as number);
+                  setFormError(undefined);
+                }}
+                displayEmpty
+                fullWidth
+                size="small"
+                renderValue={(v) => {
+                  if (!v) return 'Selecciona una habitación';
+                  const hab = (habitaciones.data ?? []).find((h) => h.id === v);
+                  return hab
+                    ? `Hab. ${hab.numero}${hab.piso ? ` · ${hab.piso.nombre}` : ''}`
+                    : `Habitación #${v}`;
+                }}
+              >
+                {(habitaciones.data ?? []).map((h) => (
+                  <MenuItem key={h.id} value={h.id}>
+                    {`Hab. ${h.numero}${h.piso ? ` · ${h.piso.nombre}` : ''}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+            {formError && (
+              <Typography variant="body2" color="error">{formError}</Typography>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              La cama se registrará con estado “Disponible”.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={cerrarDialogo} color="inherit">
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCrearCama}
+            disabled={saving || (habitaciones.data ?? []).length === 0}
+          >
+            {saving ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

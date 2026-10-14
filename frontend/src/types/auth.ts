@@ -3,7 +3,7 @@ export type RolNombre = 'ADMINISTRADOR' | 'MÉDICO' | 'RECEPCIONISTA';
 export interface Sesion {
   nombreUsuario: string;
   nombreCompleto: string;
-  rol: string;
+  rol: RolNombre;
   rutaInicial: string;
 }
 

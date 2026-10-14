@@ -106,31 +106,31 @@ CREATE TABLE IF NOT EXISTS `movimientos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
--- TABLA: usuarios (para Evaluación 02 - P3)
--- =====================================================================
-CREATE TABLE IF NOT EXISTS `usuarios` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(50) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `nombre_completo` VARCHAR(150) NOT NULL,
-  `email` VARCHAR(100),
-  `activo` BOOLEAN NOT NULL DEFAULT TRUE,
-  `fecha_creacion` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id`),
-  CONSTRAINT `uk_usuario_username` UNIQUE (`username`),
-  CONSTRAINT `uk_usuario_email` UNIQUE (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =====================================================================
 -- TABLA: roles (para Evaluación 02 - P3)
 -- =====================================================================
 CREATE TABLE IF NOT EXISTS `roles` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(50) NOT NULL,
+  `nombre` VARCHAR(40) NOT NULL,
   `descripcion` VARCHAR(255),
   `activo` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`id`),
-  CONSTRAINT `uk_rol_nombre` UNIQUE (`nombre`)
+  CONSTRAINT `uk_roles_nombre` UNIQUE (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================================
+-- TABLA: usuarios (para Evaluación 02 - P3)
+-- Alineada con la entidad Usuario (model/Usuario.java)
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS `usuarios` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `nombre_usuario` VARCHAR(80) NOT NULL,
+  `nombre_completo` VARCHAR(160) NOT NULL,
+  `contrasena_hash` VARCHAR(100) NOT NULL,
+  `activo` BOOLEAN NOT NULL DEFAULT TRUE,
+  `rol_id` BIGINT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `uk_usuarios_nombre_usuario` UNIQUE (`nombre_usuario`),
+  CONSTRAINT `fk_usuarios_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
@@ -145,18 +145,18 @@ CREATE TABLE IF NOT EXISTS `usuario_roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
--- TABLA: auditoria (para Evaluación 02 - P2)
+-- TABLA: auditorias (para Evaluación 02 - P2)
+-- Alineada con la entidad Auditoria (model/Auditoria.java)
 -- =====================================================================
-CREATE TABLE IF NOT EXISTS `auditoria` (
+CREATE TABLE IF NOT EXISTS `auditorias` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `usuario` VARCHAR(100) NOT NULL,
-  `fecha_hora` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `usuario` VARCHAR(80) NOT NULL,
+  `fecha_hora` DATETIME(6) NOT NULL,
   `operacion` VARCHAR(20) NOT NULL,
-  `entidad` VARCHAR(100) NOT NULL,
-  `entidad_id` BIGINT NOT NULL,
-  `detalle` JSON,
+  `entidad_afectada` VARCHAR(100) NOT NULL,
+  `identificador_registro` VARCHAR(80) NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `chk_auditoria_operacion` CHECK (`operacion` IN ('CREAR','ACTUALIZAR','ELIMINAR'))
+  KEY `idx_auditorias_fecha_hora` (`fecha_hora`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================
@@ -172,16 +172,15 @@ CREATE INDEX `idx_movimiento_ingreso` ON `movimientos` (`ingreso_id`);
 CREATE INDEX `idx_movimiento_fecha` ON `movimientos` (`fecha_traslado`);
 CREATE INDEX `idx_solicitud_estado` ON `solicitudes_hospitalizacion` (`estado`);
 CREATE INDEX `idx_solicitud_documento` ON `solicitudes_hospitalizacion` (`documento_paciente`);
-CREATE INDEX `idx_auditoria_entidad` ON `auditoria` (`entidad`, `entidad_id`);
-CREATE INDEX `idx_auditoria_fecha` ON `auditoria` (`fecha_hora`);
-CREATE INDEX `idx_auditoria_usuario` ON `auditoria` (`usuario`);
 
 -- =====================================================================
 -- DATOS INICIALES: Roles base (para Evaluación 02 - P3)
+-- IMPORTANTE: el código compara con tilde ("MÉDICO") en AuthController,
+-- SecurityConfig y el frontend (types/auth.ts)
 -- =====================================================================
 INSERT IGNORE INTO `roles` (`id`, `nombre`, `descripcion`, `activo`) VALUES
   (1, 'ADMINISTRADOR', 'Acceso total al sistema: usuarios, roles y todos los módulos', TRUE),
-  (2, 'MEDICO', 'Acceso a pacientes e historias clínicas', TRUE),
+  (2, 'MÉDICO', 'Acceso a pacientes e historias clínicas', TRUE),
   (3, 'RECEPCIONISTA', 'Acceso a pacientes y citas/solicitudes', TRUE);
 
 -- =====================================================================
